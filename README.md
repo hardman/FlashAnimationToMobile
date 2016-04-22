@@ -1,8 +1,10 @@
 [项目源码](https://github.com/hardman/FlashAnimationToMobile)。
 
-我的博客中的详细的项目介绍和使用方法（这里的不完整），欢迎点击：
-[项目介绍](http://blog.csdn.net/hard_man/article/details/51222423)。
-[项目使用方法](http://blog.csdn.net/hard_man/article/details/51222696)。
+在我的博客中，有详细的项目介绍和使用方法（这里的不完整），欢迎点击：
+
+- [项目介绍](http://blog.csdn.net/hard_man/article/details/51222423)。
+
+- [项目使用方法](http://blog.csdn.net/hard_man/article/details/51222696)。
 
 使用本项目的准备工作
 ---
