@@ -1,4 +1,3 @@
-[项目源码](https://github.com/hardman/FlashAnimationToMobile)。
 
 在我的博客中，有详细的项目介绍和使用方法（这里的不完整），欢迎点击：
 
