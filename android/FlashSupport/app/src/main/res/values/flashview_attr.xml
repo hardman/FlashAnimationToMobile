@@ -1,0 +1,15 @@
+<!--
+copyright 2016 wanghongyu. 
+The project page：https://github.com/hardman/FlashAnimationToMobile
+My blog page: http://blog.csdn.net/hard_man/
+-->
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="FlashView">
+        <attr name="flashFileName" format="string"/>
+        <attr name="flashDir" format="string"/>
+        <attr name="defaultAnim" format="string"/>
+        <attr name="designDPI" format="integer"/>
+        <attr name="loopTimes" format="integer"/>
+    </declare-styleable>
+</resources>

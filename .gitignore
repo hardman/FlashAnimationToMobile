@@ -30,7 +30,7 @@ proguard/
 # Log Files
 *.log
 
-app/
+#app/
 
 
 #######for iOS
