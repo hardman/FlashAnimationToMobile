@@ -1006,14 +1006,14 @@ return ret;
                 mid = mParseFrameMaxIndex;
             }
             if (mid != -1) {
-                for (NSInteger i = mLastFrameIndex; i <= mid; i++) {
+                for (NSInteger i = mLastFrameIndex + 1; i <= mid; i++) {
                     [self checkMark: mRunningAnimName frameIndex:i];
                 }
                 for (NSInteger i = 0; i < currFrameIndex; i++) {
                     [self checkMark: mRunningAnimName frameIndex:i];
                 }
             } else {
-                for (NSInteger i = mLastFrameIndex; i < currFrameIndex; i++) {
+                for (NSInteger i = mLastFrameIndex + 1; i < currFrameIndex; i++) {
                     [self checkMark: mRunningAnimName frameIndex:i];
                 }
             }

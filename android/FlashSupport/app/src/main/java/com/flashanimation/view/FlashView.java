@@ -1,15 +1,16 @@
 /*
-copyright 2016 wanghongyu. 
+copyright 2016 wanghongyu.
 The project page：https://github.com/hardman/FlashAnimationToMobile
 My blog page: http://blog.csdn.net/hard_man/
 */
-
 package com.flashanimation.view;
+
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.os.Handler;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 
@@ -45,18 +46,33 @@ import java.util.concurrent.TimeUnit;
 
  */
 public class FlashView extends View {
+    //flash文件名
     private String mFlashName = null;
+    //flash文件目录，可能在Asset中（Assets/[flash dir]/[flash name]），也可能在sdcard中（/sdcard/.[package name]/[flash dir]/[flash name]）。
     private String mFlashDir = FlashDataParser.DEFAULT_FLASH_DIR;
-    private String mDefaultAnimName = null;
-    private String mStopAtAnimName = null;
-    private int mStopAtIndex = 0;
+
+    //下面3个变量为加载完成后默认播放动画时的属性
+    private String mDefaultAnimName = null;//默认播放的动画名
+    private int mDefaultFromIndex = -1;//起始帧
+    private int mDefaultToIndex = -1;//结束帧
+
+    //设计DPI，默认为326，iPhone5s的dpi，制作flash时画布大小为640x1136时不用变，否则需要修改此值。
+    //如果不懂此值的意思，请查阅dpi相关的更多资料
     private int mDesignDPI = FlashDataParser.DEFAULT_FLASH_DPI;
 
+    //指定的动画重复次数，默认为1次
     private int mSetLoopTimes = FlashDataParser.FlashLoopTimeOnce;
 
+    //用户解析动画描述文件和一些工具类，所有关键代码都在这里
     private FlashDataParser mDataParser;
 
-    //使用new初始化使用
+    //下面两个变量用于stopAt函数
+    private String mStopAtAnimName = null;
+    private int mStopAtIndex = 0;
+
+    /***
+     * 下面3个构造方法可以在纯代码初始化时使用
+     */
     public FlashView(Context c, String flashName){
         this(c, flashName, FlashDataParser.DEFAULT_FLASH_DIR);
     }
@@ -73,6 +89,9 @@ public class FlashView extends View {
         init();
     }
 
+    /***
+     * 以下3个构造方法为默认构造方法
+     */
     public FlashView(Context context) {
         super(context);
         init();
@@ -90,6 +109,10 @@ public class FlashView extends View {
         init();
     }
 
+    /***
+     * 加载xml文件中定义的属性
+     * @param attrs
+     */
     private void initAttrs(AttributeSet attrs){
         TypedArray arr = getContext().obtainStyledAttributes(attrs, R.styleable.FlashView);
         mFlashName = arr.getString(R.styleable.FlashView_flashFileName);
@@ -101,23 +124,57 @@ public class FlashView extends View {
         mSetLoopTimes = arr.getInt(R.styleable.FlashView_loopTimes, FlashDataParser.FlashLoopTimeOnce);
 
         mDesignDPI = arr.getInt(R.styleable.FlashView_designDPI, FlashDataParser.DEFAULT_FLASH_DPI);//326为iphone5的dpi
+
+        mDefaultFromIndex = arr.getInt(R.styleable.FlashView_fromIndex, mDefaultFromIndex);
+        mDefaultToIndex = arr.getInt(R.styleable.FlashView_toIndex, mDefaultToIndex);
     }
 
+    /***
+     * 开始解析数据，并自动播放动画
+     * @return
+     */
     private boolean init(){
         mDataParser = new FlashDataParser(getContext(), mFlashName, mFlashDir, mDesignDPI);
 
-        if(mDefaultAnimName != null){
-            play(mDefaultAnimName, mSetLoopTimes);
+        if(mDataParser.isInitOk()){
+            if (mDefaultAnimName != null) {
+                if (mDefaultFromIndex >= 0) {
+                    if (mDefaultToIndex >= 0) {
+                        play(mDefaultAnimName, mSetLoopTimes, mDefaultFromIndex, mDefaultToIndex);
+                    } else {
+                        play(mDefaultAnimName, mSetLoopTimes, mDefaultFromIndex);
+                    }
+                } else {
+                    if (mDefaultToIndex >= 0) {
+                        play(mDefaultAnimName, mSetLoopTimes, 0, mDefaultToIndex);
+                    } else {
+                        play(mDefaultAnimName, mSetLoopTimes);
+                    }
+                }
+            }
+            return true;
+        }else{
+            FlashDataParser.log("[ERROR] flash data parser init return false");
+            return false;
         }
-
-        return true;
     }
 
+    /***
+     * 可以用此方法重新加载一个新的flash动画文件。
+     * @param flashName 动画文件名
+     * @return
+     */
     public boolean reload(String flashName){
         stop();
         return mDataParser.reload(flashName);
     }
 
+    /***
+     * 可以用此方法重新加载一个新的flash动画文件。
+     * @param flashName 动画文件名
+     * @param flashDir 动画所在文件夹名
+     * @return
+     */
     public boolean reload(String flashName, String flashDir){
         stop();
         return mDataParser.reload(flashName, flashDir);
@@ -152,23 +209,16 @@ public class FlashView extends View {
         mDataParser.replaceBitmap(texName, bitmap);
     }
 
-    /***
-     *
-     * 播放动画
-     * @param animName: 动画名
-     * @param loopTimes: 循环次数，0表示无限循环
-     * @param fromIndex: 从第几帧开始播放
-     * @param toIndex: 播放到第几帧结束
-     */
-    public void play(String animName, int loopTimes, int fromIndex, int toIndex) {
-        mDataParser.play(animName, loopTimes, fromIndex, toIndex);
-        mScheduledExecutorService = Executors.newScheduledThreadPool(1);
-        mScheduledExecutorService.scheduleAtFixedRate(mUpdateRunnable, 0, (int) (mDataParser.getOneFrameTime() * 1000000), TimeUnit.MICROSECONDS);
+    public void replaceBitmap(Bitmap bitmap){
+        String textureName = mDataParser.getDefaultTexTureName();
+        if (!TextUtils.isEmpty(textureName)){
+            replaceBitmap(textureName,bitmap);
+        }
     }
-
+    /***
+     * 暂时没用，因为这样会让第一次显示的比较慢，起初的10几帧都不见了。
+     */
     private Handler mHandler = new Handler();
-
-    //暂时没用，因为这样会让第一次显示的比较慢，起初的10几帧都不见了。
     private Runnable mUpdateOnMainThreadRunnable = new Runnable() {
         @Override
         public void run() {
@@ -176,6 +226,9 @@ public class FlashView extends View {
         }
     };
 
+    /***
+     * 开启线程每次间隔one frame time刷新一次。
+     */
     private ScheduledExecutorService mScheduledExecutorService;
     private Runnable mUpdateRunnable = new Runnable() {
         @Override
@@ -188,7 +241,25 @@ public class FlashView extends View {
         }
     };
 
-    public void play(String animName, int loopTimes, int fromIndex){
+    /***
+     *
+     * 播放动画
+     * @param animName: 动画名
+     * @param loopTimes: 循环次数，0表示无限循环
+     * @param fromIndex: 从第几帧开始播放
+     * @param toIndex: 播放到第几帧结束
+     */
+    public void play(String animName, int loopTimes, int fromIndex, int toIndex) {
+        if (!mDataParser.isInitOk()){
+            FlashDataParser.log("[Error] data parser is not init ok");
+            return;
+        }
+        mDataParser.play(animName, loopTimes, fromIndex, toIndex);
+        mScheduledExecutorService = Executors.newScheduledThreadPool(1);
+        mScheduledExecutorService.scheduleAtFixedRate(mUpdateRunnable, 0, (int) (mDataParser.getOneFrameTime() * 1000000), TimeUnit.MICROSECONDS);
+    }
+
+    public void play(String animName, int loopTimes, int fromIndex) {
         play(animName, loopTimes, fromIndex, mDataParser.getParseFrameMaxIndex());
     }
 
@@ -196,24 +267,44 @@ public class FlashView extends View {
         play(animName, loopTimes, 0);
     }
 
-    public void play(){
-        play(mDefaultAnimName, mSetLoopTimes);
+    public void play(int loopTimes) {
+        if (TextUtils.isEmpty(mDefaultAnimName)){
+            mDefaultAnimName = mDataParser.getDefaultAnimName();
+        }
+        play(mDefaultAnimName, loopTimes);
     }
 
+    public void play(){
+        play(mSetLoopTimes);
+    }
+    /***
+     * @return 是否动画正在播放
+     */
     public boolean isPlaying(){
         return mDataParser.isPlaying();
     }
 
-    public boolean isStoped(){
+    /***
+     * @return 是否动画已停止，或还未开始播放
+     */
+    public boolean isStoped() {
         return mDataParser.isStoped();
     }
 
-    public boolean isPaused(){
+    /***
+     *
+     * @return 是否暂停
+     */
+    public boolean isPaused() {
         return mDataParser.isPaused();
     }
 
+    public void stopAtLastIndex(){
+        String animName = mDataParser.getDefaultAnimName();
+        stopAt(animName,mDataParser.getAnimFrameMaxIndex(animName) - 1);
+    }
     /***
-     * 显示动画的某一帧，这个不同于pause，此函数在动画停止时强制显示某一帧。
+     * 显示动画的某一帧，这个不同于pause，此函数在动画停止时强制显示某一帧的图像。
      * @param animName：动画名
      * @param index：停在哪一帧
      */
@@ -224,10 +315,6 @@ public class FlashView extends View {
         postInvalidate();
     }
 
-    public void setScale(float x, float y){
-        setScale(x, y, true);
-    }
-
     /***
      * 设置图像的scale
      * @param x: scale x
@@ -236,6 +323,9 @@ public class FlashView extends View {
      */
     public void setScale(float x, float y, boolean isDpiEffect){
         mDataParser.setScale(x, y, isDpiEffect);
+    }
+    public void setScale(float x, float y){
+        setScale(x, y, true);
     }
 
     /***
@@ -272,11 +362,19 @@ public class FlashView extends View {
         mDataParser.resume();
     }
 
+    /***
+     * 绘制某一帧的图像，如果当前是stop的状态，那么就当作stopAt逻辑来处理。
+     * @param canvas
+     */
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
         if(!mDataParser.drawCanvas(canvas) && mStopAtAnimName != null){
             mDataParser.drawCanvas(canvas, mStopAtIndex, mStopAtAnimName, false);
         }
+    }
+
+    public void clearBitmap(){
+        mDataParser.clearBitmap();
     }
 }

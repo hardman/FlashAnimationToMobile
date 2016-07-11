@@ -1,9 +1,8 @@
 /*
-copyright 2016 wanghongyu. 
+copyright 2016 wanghongyu.
 The project page：https://github.com/hardman/FlashAnimationToMobile
 My blog page: http://blog.csdn.net/hard_man/
 */
-
 package com.flashanimation.view;
 
 import android.content.Context;
@@ -43,18 +42,33 @@ import com.flashanimation.R;
 
  */
 public class FlashSurfaceView extends SurfaceView implements SurfaceHolder.Callback{
+    //flash文件名
     private String mFlashName = null;
+    //flash文件目录，可能在Asset中（Assets/[flash dir]/[flash name]），也可能在sdcard中（/sdcard/.[package name]/[flash dir]/[flash name]）。
     private String mFlashDir = FlashDataParser.DEFAULT_FLASH_DIR;
-    private String mDefaultAnimName = null;
-    private String mStopAtAnimName = null;
-    private int mStopAtIndex = 0;
+
+    //下面3个变量为加载完成后默认播放动画时的属性
+    private String mDefaultAnimName = null;//默认播放的动画名
+    private int mDefaultFromIndex = -1;//起始帧
+    private int mDefaultToIndex = -1;//结束帧
+
+    //设计DPI，默认为326，iPhone5s的dpi，制作flash时画布大小为640x1136时不用变，否则需要修改此值。
+    //如果不懂此值的意思，请查阅dpi相关的更多资料
     private int mDesignDPI = FlashDataParser.DEFAULT_FLASH_DPI;
 
+    //指定的动画重复次数，默认为1次
     private int mSetLoopTimes = FlashDataParser.FlashLoopTimeOnce;
 
+    //用户解析动画描述文件和一些工具类，所有关键代码都在这里
     private FlashDataParser mDataParser;
 
-    //使用new初始化使用
+    //下面两个变量用于stopAt函数
+    private String mStopAtAnimName = null;
+    private int mStopAtIndex = 0;
+
+    /***
+     *下面3个构造方法可以在纯代码初始化时使用
+     */
     public FlashSurfaceView(Context c, String flashName){
         this(c, flashName, FlashDataParser.DEFAULT_FLASH_DIR);
     }
@@ -71,6 +85,9 @@ public class FlashSurfaceView extends SurfaceView implements SurfaceHolder.Callb
         init();
     }
 
+    /***
+     * 以下3个构造方法为默认构造方法
+     */
     public FlashSurfaceView(Context context) {
         super(context);
         init();
@@ -88,6 +105,10 @@ public class FlashSurfaceView extends SurfaceView implements SurfaceHolder.Callb
         init();
     }
 
+    /***
+     * 加载xml文件中定义的属性
+     * @param attrs
+     */
     private void initAttrs(AttributeSet attrs){
         TypedArray arr = getContext().obtainStyledAttributes(attrs, R.styleable.FlashView);
         mFlashName = arr.getString(R.styleable.FlashView_flashFileName);
@@ -99,8 +120,15 @@ public class FlashSurfaceView extends SurfaceView implements SurfaceHolder.Callb
         mSetLoopTimes = arr.getInt(R.styleable.FlashView_loopTimes, FlashDataParser.FlashLoopTimeOnce);
 
         mDesignDPI = arr.getInt(R.styleable.FlashView_designDPI, FlashDataParser.DEFAULT_FLASH_DPI);//326为iphone5的dpi
+
+        mDefaultFromIndex = arr.getInt(R.styleable.FlashView_fromIndex, mDefaultFromIndex);
+        mDefaultToIndex = arr.getInt(R.styleable.FlashView_toIndex, mDefaultToIndex);
     }
 
+    /***
+     * 开始解析数据，并自动播放动画
+     * @return
+     */
     private boolean init(){
         mDataParser = new FlashDataParser(getContext(), mFlashName, mFlashDir, mDesignDPI);
 
@@ -117,7 +145,19 @@ public class FlashSurfaceView extends SurfaceView implements SurfaceHolder.Callb
         }
 
         if(mDefaultAnimName != null){
-            play(mDefaultAnimName, mSetLoopTimes);
+            if (mDefaultFromIndex >= 0){
+                if (mDefaultToIndex >= 0){
+                    play(mDefaultAnimName, mSetLoopTimes, mDefaultFromIndex, mDefaultToIndex);
+                }else{
+                    play(mDefaultAnimName, mSetLoopTimes, mDefaultFromIndex);
+                }
+            }else{
+                if (mDefaultToIndex >= 0){
+                    play(mDefaultAnimName, mSetLoopTimes, 0, mDefaultToIndex);
+                }else{
+                    play(mDefaultAnimName, mSetLoopTimes);
+                }
+            }
             pause();
         }
 
@@ -126,11 +166,24 @@ public class FlashSurfaceView extends SurfaceView implements SurfaceHolder.Callb
         return true;
     }
 
+    /***
+     * 可以用此方法重新加载一个新的flash动画文件。
+     * @param flashName 动画文件名
+     * @return
+     */
     public boolean reload(String flashName){
+        stop();
         return mDataParser.reload(flashName);
     }
 
+    /***
+     * 可以用此方法重新加载一个新的flash动画文件。
+     * @param flashName 动画文件名
+     * @param flashDir 动画所在文件夹名
+     * @return
+     */
     public boolean reload(String flashName, String flashDir){
+        stop();
         return mDataParser.reload(flashName, flashDir);
     }
 
@@ -142,6 +195,7 @@ public class FlashSurfaceView extends SurfaceView implements SurfaceHolder.Callb
      * @return
      */
     public boolean reload(String flashName, String flashDir, int designDPI){
+        stop();
         return mDataParser.reload(flashName, flashDir, designDPI);
     }
 
@@ -190,14 +244,24 @@ public class FlashSurfaceView extends SurfaceView implements SurfaceHolder.Callb
         play(mDefaultAnimName, mSetLoopTimes);
     }
 
+    /***
+     * @return 是否动画正在播放
+     */
     public boolean isPlaying(){
         return mDataParser.isPlaying();
     }
 
+    /***
+     * @return 是否动画已停止，或还未开始播放
+     */
     public boolean isStoped(){
         return mDataParser.isStoped();
     }
 
+    /***
+     *
+     * @return 是否暂停
+     */
     public boolean isPaused(){
         return mDataParser.isPaused();
     }
@@ -217,10 +281,6 @@ public class FlashSurfaceView extends SurfaceView implements SurfaceHolder.Callb
         }
     }
 
-    public void setScale(float x, float y){
-        setScale(x, y, true);
-    }
-
     /***
      * 设置图像的scale
      * @param x: scale x
@@ -229,6 +289,9 @@ public class FlashSurfaceView extends SurfaceView implements SurfaceHolder.Callb
      */
     public void setScale(float x, float y, boolean isDpiEffect){
         mDataParser.setScale(x, y, isDpiEffect);
+    }
+    public void setScale(float x, float y){
+        setScale(x, y, true);
     }
 
     /***
@@ -249,7 +312,7 @@ public class FlashSurfaceView extends SurfaceView implements SurfaceHolder.Callb
             try {
                 mDrawThread.join();
             } catch (InterruptedException e) {
-                mDataParser.log(e);
+                FlashDataParser.log(e);
             }
         }
         mStopAtAnimName = null;
@@ -270,6 +333,8 @@ public class FlashSurfaceView extends SurfaceView implements SurfaceHolder.Callb
         mDataParser.resume();
     }
 
+
+    //下面这些方法是surfaceview的特有方法
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
     }
@@ -279,7 +344,7 @@ public class FlashSurfaceView extends SurfaceView implements SurfaceHolder.Callb
     public void surfaceCreated(SurfaceHolder holder) {
         isSurfaceCreated = true;
         resume();
-        mDataParser.log("surface created");
+        FlashDataParser.log("surface created");
     }
 
     @Override
@@ -305,7 +370,7 @@ public class FlashSurfaceView extends SurfaceView implements SurfaceHolder.Callb
                         try {
                             Thread.sleep(100);
                         } catch (InterruptedException e) {
-                            mDataParser.log(e);
+                            FlashDataParser.log(e);
                         }
                         isRealStartDrawImage = false;
                         continue;
@@ -331,7 +396,7 @@ public class FlashSurfaceView extends SurfaceView implements SurfaceHolder.Callb
                             Thread.sleep(sleepTime);
                         }
                     } catch (InterruptedException e) {
-                        mDataParser.log(e);
+                        FlashDataParser.log(e);
                     }
                 }
                 while(!update());//for clean screen
@@ -348,7 +413,7 @@ public class FlashSurfaceView extends SurfaceView implements SurfaceHolder.Callb
                 synchronized (mSurfaceHolder){
                     c = mSurfaceHolder.lockCanvas();
                     if(c == null){
-                        mDataParser.log("[ERROR] canvas is null in update()");
+                        FlashDataParser.log("[ERROR] canvas is null in update()");
                     } else {
                         if(isStoped()){
                             mDataParser.cleanScreen(c);
@@ -363,7 +428,7 @@ public class FlashSurfaceView extends SurfaceView implements SurfaceHolder.Callb
                     }
                 }
             }catch (Exception e){
-                mDataParser.log(e);
+                FlashDataParser.log(e);
             }finally {
                 if (c != null){
                     mSurfaceHolder.unlockCanvasAndPost(c);

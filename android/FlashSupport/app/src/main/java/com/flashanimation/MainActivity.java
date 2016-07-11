@@ -1,8 +1,12 @@
+/*
+copyright 2016 wanghongyu.
+The project page：https://github.com/hardman/FlashAnimationToMobile
+My blog page: http://blog.csdn.net/hard_man/
+*/
 package com.flashanimation;
 
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.flashanimation.view.FlashDataParser;
 import com.flashanimation.view.FlashView;

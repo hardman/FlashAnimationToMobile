@@ -1,15 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!--
-copyright 2016 wanghongyu. 
+copyright 2016 wanghongyu.
 The project page：https://github.com/hardman/FlashAnimationToMobile
 My blog page: http://blog.csdn.net/hard_man/
 -->
-<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="FlashView">
+        <!-- flash文件名 必须有-->
         <attr name="flashFileName" format="string"/>
+        <!-- 动画所在文件夹，默认为flashAnims，最好使用默认文件夹-->
         <attr name="flashDir" format="string"/>
-        <attr name="defaultAnim" format="string"/>
+        <!-- flash动画目标设备的DPI-->
+        <!-- 也就是你做flash的时候，心里总有一个默认的用于测试的设备，这个值就是该设备的DPI-->
+        <!-- 到时候好算缩放比例，默认为iPhone5的dpi 326，做动画时需要做成640x1136的画布尺寸-->
         <attr name="designDPI" format="integer"/>
+        <!-- 默认播放属性 -->
+        <!-- 动画名称 如果有则自动播放，没有则不播放-->
+        <attr name="defaultAnim" format="string"/>
+        <!-- 重复次数 默认为1-->
         <attr name="loopTimes" format="integer"/>
+        <!-- 播放从第几帧开始 默认为0-->
+        <attr name="fromIndex" format="integer"/>
+        <!-- 播放从第几帧结束 默认为最后一帧-->
+        <attr name="toIndex" format="integer"/>
     </declare-styleable>
 </resources>
