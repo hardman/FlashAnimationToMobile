@@ -1,8 +1,8 @@
+#coding=utf-8
 '''
 copyright 2016 wanghongyu. 
 The project page：https://github.com/hardman/FlashAnimationToMobile
 My blog page: http://blog.csdn.net/hard_man/
-
 '''
 import os
 import sys
