@@ -4,7 +4,6 @@ The project page：https://github.com/hardman/FlashAnimationToMobile
 My blog page: http://blog.csdn.net/hard_man/
 */
 #include "animationPlayer/AnimNode.h"
-#include "animationPlayer/AnimManage.h"
 void windy::AnimNode::load( const char * fileName )
 {
 	clear();
@@ -16,7 +15,7 @@ void windy::AnimNode::load( const char * fileName )
 	mFileName = fileNameWithTail.substr(0, fileNameWithTail.find_last_of("."));
     
 	//获取flabin的内容
-	mData = AnimManage::getInstance()->getData((fileDir + mFileName + ".flabin").c_str());
+	mData = FileUtils::getInstance()->getDataFromFile((fileDir + mFileName + ".flabin").c_str());
 	//是否为图集
     string plistPath = fileDir + fileName + ".plist";
     isSheet = false;
