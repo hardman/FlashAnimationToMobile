@@ -702,8 +702,13 @@ return ret;
     NSInteger index = [[oneFrame objectForKey:@"frameIndex"] integerValue];
     BOOL isEmpty = [[oneFrame objectForKey:@"isEmpty"] boolValue];
     if (isEmpty) {
+        mParseLastIndex = index;
+        mParseLastIsTween = NO;
+        mParseLastFrame = oneFrame;
         return;
     }
+
+    BOOL lastFrameIsEmpty = mParseLastFrame ? [mParseLastFrame[@"isEmpty"] boolValue] : YES;
     
     NSInteger duration = [[oneFrame objectForKey:@"duration"] integerValue];
     
@@ -720,7 +725,9 @@ return ret;
             if (l == toIdx) {
                 [self addOneFrameToParsedAnimWithArr:arr frame:oneFrame];
             }else{
-                [self addOneFrameToParsedAnimWithArr:arr frame:mParseLastFrame];
+                if(!lastFrameIsEmpty){
+                    [self addOneFrameToParsedAnimWithArr:arr frame:mParseLastFrame];
+                }
             }
         }else{
             float per = (float)(l - fromIdx + 1) / len;
