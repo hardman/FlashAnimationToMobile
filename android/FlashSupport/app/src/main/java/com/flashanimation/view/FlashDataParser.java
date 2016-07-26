@@ -974,8 +974,13 @@ public class FlashDataParser{
             int index = oneFrame.getInt("frameIndex");
             boolean isEmpty = oneFrame.getBoolean("isEmpty");
             if (isEmpty) {
+                mParseLastIndex = index;
+                mParseLastIsTween = false;
+                mParseLastFrame = oneFrame;
                 return;
             }
+
+            boolean lastFrameIsEmpty = mParseLastFrame != null ? mParseLastFrame.getBoolean("isEmpty") : true;
 
             int duration = oneFrame.getInt("duration");
 
@@ -990,7 +995,9 @@ public class FlashDataParser{
                     if (i == toIdx) {
                         addOneFrameDataToIdx(oneFrame, i, parsedAnim);
                     } else {
-                        addOneFrameDataToIdx(mParseLastFrame, i, parsedAnim);
+                        if(!lastFrameIsEmpty){
+                            addOneFrameDataToIdx(mParseLastFrame, i, parsedAnim);
+                        }
                     }
                 } else {
                     float per = (float) (i - fromIdx + 1) / len;
