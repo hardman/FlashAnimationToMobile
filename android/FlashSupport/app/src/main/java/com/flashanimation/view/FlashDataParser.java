@@ -1616,15 +1616,17 @@ public class FlashDataParser{
         AnimData animData = mParsedData.get(animName);
         ArrayList<KeyFrameData> frameArr = animData.keyFrameData.get("" + frameIndex);
 
-        for(int i = frameArr.size() - 1; i >= 0; i--) {
-            KeyFrameData frameData = frameArr.get(i);
-            if (frameData.mark != null && frameData.mark.trim().length() > 0) {
-                if (mEventCallback != null) {
-                    FlashViewEventData eventData = new FlashViewEventData();
-                    eventData.index = frameIndex;
-                    eventData.mark = frameData.mark;
-                    eventData.data = frameData;
-                    mEventCallback.onEvent(FlashViewEvent.MARK, eventData);
+        if(frameArr != null) {
+            for (int i = frameArr.size() - 1; i >= 0; i--) {
+                KeyFrameData frameData = frameArr.get(i);
+                if (frameData.mark != null && frameData.mark.trim().length() > 0) {
+                    if (mEventCallback != null) {
+                        FlashViewEventData eventData = new FlashViewEventData();
+                        eventData.index = frameIndex;
+                        eventData.mark = frameData.mark;
+                        eventData.data = frameData;
+                        mEventCallback.onEvent(FlashViewEvent.MARK, eventData);
+                    }
                 }
             }
         }
