@@ -1006,23 +1006,23 @@ return ret;
         if (mStartTime == 0) {
             return;
         }
+
         currFrameIndex = mFromIndex + (NSInteger)((self.currentTime - mStartTime) / mOneFrameTime) % (mToIndex - mFromIndex + 1);
-        if (mLastFrameIndex >= 0) {
-            NSInteger mid = -1;
-            if (mLastFrameIndex > currFrameIndex) {
-                mid = mParseFrameMaxIndex;
+
+        NSInteger mid = -1;
+        if (mLastFrameIndex > currFrameIndex) {
+            mid = mParseFrameMaxIndex;
+        }
+        if (mid != -1) {
+            for (NSInteger i = mLastFrameIndex + 1; i <= mid; i++) {
+                [self checkMark: mRunningAnimName frameIndex:i];
             }
-            if (mid != -1) {
-                for (NSInteger i = mLastFrameIndex + 1; i <= mid; i++) {
-                    [self checkMark: mRunningAnimName frameIndex:i];
-                }
-                for (NSInteger i = 0; i < currFrameIndex; i++) {
-                    [self checkMark: mRunningAnimName frameIndex:i];
-                }
-            } else {
-                for (NSInteger i = mLastFrameIndex + 1; i < currFrameIndex; i++) {
-                    [self checkMark: mRunningAnimName frameIndex:i];
-                }
+            for (NSInteger i = 0; i < currFrameIndex; i++) {
+                [self checkMark: mRunningAnimName frameIndex:i];
+            }
+        } else {
+            for (NSInteger i = mLastFrameIndex + 1; i < currFrameIndex; i++) {
+                [self checkMark: mRunningAnimName frameIndex:i];
             }
         }
     }else{

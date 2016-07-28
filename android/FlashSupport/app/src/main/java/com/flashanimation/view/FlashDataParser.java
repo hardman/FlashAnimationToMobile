@@ -1722,23 +1722,21 @@ public class FlashDataParser{
         int animLen = mToIndex - mFromIndex;
         int currFrameIndex = mFromIndex + (int)(mTotalTime / mOneFrameTime) % animLen;
 
-        //检查漏下的帧事件 }
-        if (mLastFrameIndex >= 0) {
-            int mid = -1;
-            if (mLastFrameIndex > currFrameIndex) {
-                mid = mParseFrameMaxIndex;
+        //检查漏下的帧事件
+        int mid = -1;
+        if (mLastFrameIndex > currFrameIndex) {
+            mid = mParseFrameMaxIndex;
+        }
+        if (mid != -1) {
+            for (int i = mLastFrameIndex + 1; i <= mid; i++) {
+                checkMark(mRunningAnimName, i);
             }
-            if (mid != -1) {
-                for (int i = mLastFrameIndex + 1; i <= mid; i++) {
-                    checkMark(mRunningAnimName, i);
-                }
-                for (int i = 0; i < currFrameIndex; i++) {
-                    checkMark(mRunningAnimName, i);
-                }
-            } else {
-                for (int i = mLastFrameIndex + 1; i < currFrameIndex; i++) {
-                    checkMark(mRunningAnimName, i);
-                }
+            for (int i = 0; i < currFrameIndex; i++) {
+                checkMark(mRunningAnimName, i);
+            }
+        } else {
+            for (int i = mLastFrameIndex + 1; i < currFrameIndex; i++) {
+                checkMark(mRunningAnimName, i);
             }
         }
 
