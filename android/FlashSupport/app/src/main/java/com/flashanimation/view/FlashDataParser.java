@@ -1613,20 +1613,26 @@ public class FlashDataParser{
      * @param frameIndex 第几帧
      */
     private void checkMark(String animName, int frameIndex){
+        if(mParsedData == null){
+            return;
+        }
         AnimData animData = mParsedData.get(animName);
+        if(animData == null){
+            return;
+        }
         ArrayList<KeyFrameData> frameArr = animData.keyFrameData.get("" + frameIndex);
-
-        if(frameArr != null) {
-            for (int i = frameArr.size() - 1; i >= 0; i--) {
-                KeyFrameData frameData = frameArr.get(i);
-                if (frameData.mark != null && frameData.mark.trim().length() > 0) {
-                    if (mEventCallback != null) {
-                        FlashViewEventData eventData = new FlashViewEventData();
-                        eventData.index = frameIndex;
-                        eventData.mark = frameData.mark;
-                        eventData.data = frameData;
-                        mEventCallback.onEvent(FlashViewEvent.MARK, eventData);
-                    }
+        if(frameArr == null) {
+            return;
+        }
+        for (int i = frameArr.size() - 1; i >= 0; i--) {
+            KeyFrameData frameData = frameArr.get(i);
+            if (frameData.mark != null && frameData.mark.trim().length() > 0) {
+                if (mEventCallback != null) {
+                    FlashViewEventData eventData = new FlashViewEventData();
+                    eventData.index = frameIndex;
+                    eventData.mark = frameData.mark;
+                    eventData.data = frameData;
+                    mEventCallback.onEvent(FlashViewEvent.MARK, eventData);
                 }
             }
         }
