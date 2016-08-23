@@ -417,6 +417,7 @@ public class FlashSurfaceView extends SurfaceView implements SurfaceHolder.Callb
                     } else {
                         if(isStoped()){
                             mDataParser.cleanScreen(c);
+                            ret = true;
                         }else {
                             isRealStartDrawImage = true;
                             mDataParser.cleanScreen(c);
