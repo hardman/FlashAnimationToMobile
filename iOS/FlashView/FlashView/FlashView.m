@@ -1,8 +1,8 @@
 /*
-copyright 2016 wanghongyu. 
-The project page：https://github.com/hardman/FlashAnimationToMobile
-My blog page: http://blog.csdn.net/hard_man/
-*/
+ copyright 2016 wanghongyu. 
+ The project page：https://github.com/hardman/FlashAnimationToMobile
+ My blog page: http://blog.csdn.net/hard_man/
+ */
 
 #import "FlashView.h"
 
@@ -707,7 +707,7 @@ return ret;
         mParseLastFrame = oneFrame;
         return;
     }
-
+    
     BOOL lastFrameIsEmpty = mParseLastFrame ? [mParseLastFrame[@"isEmpty"] boolValue] : YES;
     
     NSInteger duration = [[oneFrame objectForKey:@"duration"] integerValue];
@@ -1006,9 +1006,9 @@ return ret;
         if (mStartTime == 0) {
             return;
         }
-
+        
         currFrameIndex = mFromIndex + (NSInteger)((self.currentTime - mStartTime) / mOneFrameTime) % (mToIndex - mFromIndex + 1);
-
+        
         NSInteger mid = -1;
         if (mLastFrameIndex > currFrameIndex) {
             mid = mParseFrameMaxIndex;
@@ -1131,11 +1131,11 @@ return ret;
     }
 }
 
-//被移除时清理数据
--(void)willMoveToSuperview:(UIView *)newSuperview{
-    if(!newSuperview){
-        [self cleanData];
-    }
-}
+////被移除时清理数据
+//-(void)willMoveToSuperview:(UIView *)newSuperview{
+//    if(!newSuperview){
+//        [self cleanData];
+//    }
+//}
 
 @end
