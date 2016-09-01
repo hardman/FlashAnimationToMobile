@@ -46,6 +46,15 @@
 		A40149C81C210F0800201BFA /* heiniao_zuogebo_2.png in Resources */ = {isa = PBXBuildFile; fileRef = A40149A41C210F0800201BFA /* heiniao_zuogebo_2.png */; };
 		A40149D41C21499600201BFA /* testpng.png in Resources */ = {isa = PBXBuildFile; fileRef = A40149D31C21499600201BFA /* testpng.png */; };
 		A40149DA1C23C63000201BFA /* heiniao.flabin in Resources */ = {isa = PBXBuildFile; fileRef = A40149D91C23C63000201BFA /* heiniao.flabin */; };
+		A43FA1C91D7803AB005319AE /* FlashViewDownloader.m in Sources */ = {isa = PBXBuildFile; fileRef = A43FA1C81D7803AB005319AE /* FlashViewDownloader.m */; };
+		A43FA1D71D7804EB005319AE /* ioapi.c in Sources */ = {isa = PBXBuildFile; fileRef = A43FA1CD1D7804EB005319AE /* ioapi.c */; };
+		A43FA1D81D7804EB005319AE /* mztools.c in Sources */ = {isa = PBXBuildFile; fileRef = A43FA1CF1D7804EB005319AE /* mztools.c */; };
+		A43FA1D91D7804EB005319AE /* unzip.c in Sources */ = {isa = PBXBuildFile; fileRef = A43FA1D11D7804EB005319AE /* unzip.c */; };
+		A43FA1DA1D7804EB005319AE /* zip.c in Sources */ = {isa = PBXBuildFile; fileRef = A43FA1D31D7804EB005319AE /* zip.c */; };
+		A43FA1DB1D7804EB005319AE /* ZipArchive.m in Sources */ = {isa = PBXBuildFile; fileRef = A43FA1D61D7804EB005319AE /* ZipArchive.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
+		A43FA1E11D781C3B005319AE /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = A43FA1E01D781C3B005319AE /* libz.tbd */; };
+		A43FA1E41D7831F5005319AE /* TestFlashViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A43FA1E31D7831F5005319AE /* TestFlashViewController.m */; };
+		A43FA1E71D78322A005319AE /* TestFlashViewDownloadViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A43FA1E61D78322A005319AE /* TestFlashViewDownloadViewController.m */; };
 		A4A87E831C2827B300649A1A /* testDB_1.png in Resources */ = {isa = PBXBuildFile; fileRef = A4A87E6B1C2827B300649A1A /* testDB_1.png */; };
 		A4A87E841C2827B300649A1A /* testDB_10.png in Resources */ = {isa = PBXBuildFile; fileRef = A4A87E6C1C2827B300649A1A /* testDB_10.png */; };
 		A4A87E851C2827B300649A1A /* testDB_11.png in Resources */ = {isa = PBXBuildFile; fileRef = A4A87E6D1C2827B300649A1A /* testDB_11.png */; };
@@ -152,6 +161,24 @@
 		A40149A41C210F0800201BFA /* heiniao_zuogebo_2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = heiniao_zuogebo_2.png; sourceTree = "<group>"; };
 		A40149D31C21499600201BFA /* testpng.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testpng.png; sourceTree = "<group>"; };
 		A40149D91C23C63000201BFA /* heiniao.flabin */ = {isa = PBXFileReference; lastKnownFileType = file; name = heiniao.flabin; path = FlashView/Resources/flashAnims/heiniao.flabin; sourceTree = SOURCE_ROOT; };
+		A43FA1C71D7803AB005319AE /* FlashViewDownloader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlashViewDownloader.h; sourceTree = "<group>"; };
+		A43FA1C81D7803AB005319AE /* FlashViewDownloader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlashViewDownloader.m; sourceTree = "<group>"; };
+		A43FA1CC1D7804EB005319AE /* crypt.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = crypt.h; sourceTree = "<group>"; };
+		A43FA1CD1D7804EB005319AE /* ioapi.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = ioapi.c; sourceTree = "<group>"; };
+		A43FA1CE1D7804EB005319AE /* ioapi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ioapi.h; sourceTree = "<group>"; };
+		A43FA1CF1D7804EB005319AE /* mztools.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = mztools.c; sourceTree = "<group>"; };
+		A43FA1D01D7804EB005319AE /* mztools.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mztools.h; sourceTree = "<group>"; };
+		A43FA1D11D7804EB005319AE /* unzip.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = unzip.c; sourceTree = "<group>"; };
+		A43FA1D21D7804EB005319AE /* unzip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = unzip.h; sourceTree = "<group>"; };
+		A43FA1D31D7804EB005319AE /* zip.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = zip.c; sourceTree = "<group>"; };
+		A43FA1D41D7804EB005319AE /* zip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = zip.h; sourceTree = "<group>"; };
+		A43FA1D51D7804EB005319AE /* ZipArchive.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZipArchive.h; sourceTree = "<group>"; };
+		A43FA1D61D7804EB005319AE /* ZipArchive.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ZipArchive.m; sourceTree = "<group>"; };
+		A43FA1E01D781C3B005319AE /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
+		A43FA1E21D7831F5005319AE /* TestFlashViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestFlashViewController.h; sourceTree = "<group>"; };
+		A43FA1E31D7831F5005319AE /* TestFlashViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestFlashViewController.m; sourceTree = "<group>"; };
+		A43FA1E51D78322A005319AE /* TestFlashViewDownloadViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestFlashViewDownloadViewController.h; sourceTree = "<group>"; };
+		A43FA1E61D78322A005319AE /* TestFlashViewDownloadViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestFlashViewDownloadViewController.m; sourceTree = "<group>"; };
 		A4A87E6B1C2827B300649A1A /* testDB_1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testDB_1.png; sourceTree = "<group>"; };
 		A4A87E6C1C2827B300649A1A /* testDB_10.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testDB_10.png; sourceTree = "<group>"; };
 		A4A87E6D1C2827B300649A1A /* testDB_11.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testDB_11.png; sourceTree = "<group>"; };
@@ -228,6 +255,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A43FA1E11D781C3B005319AE /* libz.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -284,6 +312,32 @@
 			path = heiniao;
 			sourceTree = "<group>";
 		};
+		A43FA1CA1D7804EB005319AE /* Zip */ = {
+			isa = PBXGroup;
+			children = (
+				A43FA1CB1D7804EB005319AE /* minizip */,
+				A43FA1D51D7804EB005319AE /* ZipArchive.h */,
+				A43FA1D61D7804EB005319AE /* ZipArchive.m */,
+			);
+			path = Zip;
+			sourceTree = "<group>";
+		};
+		A43FA1CB1D7804EB005319AE /* minizip */ = {
+			isa = PBXGroup;
+			children = (
+				A43FA1CC1D7804EB005319AE /* crypt.h */,
+				A43FA1CD1D7804EB005319AE /* ioapi.c */,
+				A43FA1CE1D7804EB005319AE /* ioapi.h */,
+				A43FA1CF1D7804EB005319AE /* mztools.c */,
+				A43FA1D01D7804EB005319AE /* mztools.h */,
+				A43FA1D11D7804EB005319AE /* unzip.c */,
+				A43FA1D21D7804EB005319AE /* unzip.h */,
+				A43FA1D31D7804EB005319AE /* zip.c */,
+				A43FA1D41D7804EB005319AE /* zip.h */,
+			);
+			path = minizip;
+			sourceTree = "<group>";
+		};
 		A4A87E6A1C2827B300649A1A /* testDB */ = {
 			isa = PBXGroup;
 			children = (
@@ -328,6 +382,7 @@
 		A4AC4F2E1C1EA03000FFA174 = {
 			isa = PBXGroup;
 			children = (
+				A43FA1E01D781C3B005319AE /* libz.tbd */,
 				A4AC4F511C1EA0D800FFA174 /* Resources */,
 				A4AC4F391C1EA03000FFA174 /* FlashView */,
 				A4AC4F381C1EA03000FFA174 /* Products */,
@@ -345,11 +400,16 @@
 		A4AC4F391C1EA03000FFA174 /* FlashView */ = {
 			isa = PBXGroup;
 			children = (
+				A43FA1CA1D7804EB005319AE /* Zip */,
 				A4AC4F521C1EA13800FFA174 /* FlashView */,
 				A4AC4F3D1C1EA03000FFA174 /* AppDelegate.h */,
 				A4AC4F3E1C1EA03000FFA174 /* AppDelegate.m */,
 				A4AC4F401C1EA03000FFA174 /* ViewController.h */,
 				A4AC4F411C1EA03000FFA174 /* ViewController.m */,
+				A43FA1E21D7831F5005319AE /* TestFlashViewController.h */,
+				A43FA1E31D7831F5005319AE /* TestFlashViewController.m */,
+				A43FA1E51D78322A005319AE /* TestFlashViewDownloadViewController.h */,
+				A43FA1E61D78322A005319AE /* TestFlashViewDownloadViewController.m */,
 				A4AC4F431C1EA03000FFA174 /* Main.storyboard */,
 				A4AC4F461C1EA03000FFA174 /* Assets.xcassets */,
 				A4AC4F481C1EA03000FFA174 /* LaunchScreen.storyboard */,
@@ -381,6 +441,8 @@
 			children = (
 				A4AC4F531C1EA15B00FFA174 /* FlashView.h */,
 				A4AC4F541C1EA15B00FFA174 /* FlashView.m */,
+				A43FA1C71D7803AB005319AE /* FlashViewDownloader.h */,
+				A43FA1C81D7803AB005319AE /* FlashViewDownloader.m */,
 			);
 			name = FlashView;
 			sourceTree = "<group>";
@@ -453,8 +515,8 @@
 			buildConfigurationList = A4AC4F4E1C1EA03000FFA174 /* Build configuration list for PBXNativeTarget "FlashView" */;
 			buildPhases = (
 				A4AC4F331C1EA03000FFA174 /* Sources */,
-				A4AC4F341C1EA03000FFA174 /* Frameworks */,
 				A4AC4F351C1EA03000FFA174 /* Resources */,
+				A4AC4F341C1EA03000FFA174 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -611,10 +673,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A43FA1D71D7804EB005319AE /* ioapi.c in Sources */,
 				A4AC4F421C1EA03000FFA174 /* ViewController.m in Sources */,
+				A43FA1E41D7831F5005319AE /* TestFlashViewController.m in Sources */,
 				A4AC4F3F1C1EA03000FFA174 /* AppDelegate.m in Sources */,
+				A43FA1DA1D7804EB005319AE /* zip.c in Sources */,
 				A4AC4F3C1C1EA03000FFA174 /* main.m in Sources */,
+				A43FA1D81D7804EB005319AE /* mztools.c in Sources */,
+				A43FA1DB1D7804EB005319AE /* ZipArchive.m in Sources */,
+				A43FA1E71D78322A005319AE /* TestFlashViewDownloadViewController.m in Sources */,
 				A4AC4F551C1EA15B00FFA174 /* FlashView.m in Sources */,
+				A43FA1D91D7804EB005319AE /* unzip.c in Sources */,
+				A43FA1C91D7803AB005319AE /* FlashViewDownloader.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

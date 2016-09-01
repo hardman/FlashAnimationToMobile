@@ -1,8 +1,8 @@
 /*
-copyright 2016 wanghongyu. 
-The project page：https://github.com/hardman/FlashAnimationToMobile
-My blog page: http://blog.csdn.net/hard_man/
-*/
+ copyright 2016 wanghongyu. 
+ The project page：https://github.com/hardman/FlashAnimationToMobile
+ My blog page: http://blog.csdn.net/hard_man/
+ */
 
 /***
  典型用法：
@@ -82,7 +82,7 @@ typedef void (^FlashUIntCallback)(FlashViewEvent, id);
 
 @interface FlashView : UIView
 
-//文件是否存在
+//文件是否存在，如aaaa.fla则传入aaaa
 +(BOOL) isAnimExist:(NSString *)flashName;
 
 @property (nonatomic, weak) id<FlashViewDelegate> delegate;//事件回调代理
