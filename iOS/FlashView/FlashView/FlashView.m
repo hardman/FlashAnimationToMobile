@@ -698,7 +698,7 @@ return ret;
  * 播放的时候，播放到哪一帧就把对应的帧数据取出，然后显示里面的图片
  * 本方法处理的帧为：当前关键帧和上一个关键帧之间的所有帧数据。
  */
--(void) parseKeyFrame:(NSDictionary *)oneFrame parsedAnim:(NSMutableDictionary *)parsedAnim{
+-(void) parseKeyFrame:(NSDictionary *)oneFrame parsedAnim:(NSMutableDictionary *)parsedAnim isLastKeyFrame:(BOOL) isLastKeyFrame{
     NSInteger index = [[oneFrame objectForKey:@"frameIndex"] integerValue];
     BOOL isEmpty = [[oneFrame objectForKey:@"isEmpty"] boolValue];
     if (isEmpty) {
@@ -756,9 +756,10 @@ return ret;
         }
     }
     
-    //如果是最后一个关键帧 需要检测从这一帧到结束是否有图像
-    if(duration > 1 && index + duration >= mParseFrameMaxIndex + 1){
-        for (NSInteger m = index; m <= mParseFrameMaxIndex; m++) {
+    
+    //如果是最后一个关键帧 需要检测从这一帧到本层结束是否有图像
+    if(isLastKeyFrame){
+        for (NSInteger m = index; m < index + duration; m++) {
             NSMutableArray *arr = [self getParsedAnimWithIndex:m andParent:parsedAnim];
             [self addOneFrameToParsedAnimWithArr:arr frame:oneFrame];
         }
@@ -840,7 +841,7 @@ return ret;
             mParseLastFrame = nil;
             for (int l = 0; l < keyFrameNum; l++) {
                 NSMutableDictionary *oneFrame = [self readKeyFrame:reader imageArr:imagesArr];
-                [self parseKeyFrame:oneFrame parsedAnim:parsedAnim];
+                [self parseKeyFrame:oneFrame parsedAnim:parsedAnim isLastKeyFrame:l == keyFrameNum - 1];
             }
         }
         [mParsedData setObject:parsedAnim forKey:animName];
@@ -877,7 +878,7 @@ return ret;
             mParseLastFrame = nil;
             for (int k = 0; k < frames.count; k++) {
                 NSDictionary *oneFrame = [frames objectAtIndex: k];
-                [self parseKeyFrame:oneFrame parsedAnim:parsedAnim];
+                [self parseKeyFrame:oneFrame parsedAnim:parsedAnim isLastKeyFrame:k == frames.count - 1];
             }
         }
         

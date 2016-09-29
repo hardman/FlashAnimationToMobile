@@ -874,7 +874,7 @@ public class FlashDataParser{
                     mParseLastFrame = null;
                     for(int l = 0; l < frames.length(); l++){
                         JSONObject oneFrame = frames.getJSONObject(l);
-                        parseKeyFrame(oneFrame, parsedAnim);
+                        parseKeyFrame(oneFrame, parsedAnim, frames.length() - 1 == l);
                     }
                 }
                 mParsedData.put(animName, parsedAnim);
@@ -955,7 +955,7 @@ public class FlashDataParser{
                 mParseLastFrame = null;
                 for(int l = 0; l < keyFrameNum; l++){
                     JSONObject oneFrame = readKeyFrame(dataReader, imagesArr);
-                    parseKeyFrame(oneFrame, parsedAnim);
+                    parseKeyFrame(oneFrame, parsedAnim, keyFrameNum - 1 == l);
                 }
             }
             mParsedData.put(animName, parsedAnim);
@@ -969,7 +969,7 @@ public class FlashDataParser{
      * @param oneFrame jsonObject
      * @param parsedAnim 解析完成的动画数据
      */
-    private void parseKeyFrame(JSONObject oneFrame, AnimData parsedAnim){
+    private void parseKeyFrame(JSONObject oneFrame, AnimData parsedAnim, boolean isLastKeyFrame){
         try {
             int index = oneFrame.getInt("frameIndex");
             boolean isEmpty = oneFrame.getBoolean("isEmpty");
@@ -1029,8 +1029,8 @@ public class FlashDataParser{
                 }
             }
 
-            if (duration > 1 && index + duration >= mParseFrameMaxIndex) {
-                for (int i = index; i <= mParseFrameMaxIndex - 1; i++) {
+            if (isLastKeyFrame) {
+                for (int i = index; i < index + duration; i++) {
                     addOneFrameDataToIdx(oneFrame, i, parsedAnim);
                 }
             }
