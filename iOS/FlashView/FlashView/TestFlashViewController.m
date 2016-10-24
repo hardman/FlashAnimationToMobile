@@ -27,13 +27,13 @@
 }
 
 -(void) testFlashView{
-    FlashView *flashView = [[FlashView alloc] initWithFlashName:@"bieshu"];
+    FlashView *flashView = [[FlashView alloc] initWithFlashName:@"test"];
     flashView.frame = self.view.frame;// CGRectMake(100, 100, 200, 500);
     flashView.backgroundColor = [UIColor clearColor];
     [self.view addSubview:flashView];
-    [flashView play:@"bieshu" loopTimes:FlashLoopTimeForever fromIndex:20 toIndex:30];
+    [flashView play:@"Ring" loopTimes:FlashLoopTimeForever];
     
-    [self performSelector:@selector(loadCar:) withObject:flashView afterDelay:3];
+    //    [self performSelector:@selector(loadCar:) withObject:flashView afterDelay:3];
 }
 
 -(void) reload:(FlashView *)flashView{
