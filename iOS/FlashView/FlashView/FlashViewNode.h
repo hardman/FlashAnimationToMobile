@@ -10,6 +10,7 @@
 
 @interface FlashViewBaseNode: NSObject
 -(void) updateToIndex:(NSInteger) index;
+-(void) trigerEventWithIndex:(NSInteger)index;
 @end
 
 //帧数据
@@ -32,18 +33,15 @@
 @property (nonatomic, unsafe_unretained) char g;
 @property (nonatomic, unsafe_unretained) char b;
 @property (nonatomic, unsafe_unretained) char a;
-
-@property (nonatomic, weak) FlashViewFrameNode *nextFrameNode;
 @end
 
 //层数据
 @interface FlashViewLayerNode : FlashViewBaseNode
 //当前显示的imageName
 @property (nonatomic, copy) NSString *imageName;
-//层view
-@property (nonatomic, readonly, strong) UIView *layerView;
 @property (nonatomic,readonly, strong) NSArray<FlashViewFrameNode *> *keyFrames;
 -(void) addKeyFrame:(FlashViewFrameNode *)keyFrame;
+@property (nonatomic, unsafe_unretained) NSInteger index;
 @end
 
 //动画数据
@@ -51,7 +49,7 @@
 @property (nonatomic, copy) NSString *animName;
 @property (nonatomic, unsafe_unretained) NSInteger frameCount;
 @property (nonatomic, readonly, strong) NSArray<FlashViewLayerNode *> *layers;
--(void) addLayer:(FlashViewLayerNode *) layer;
+-(void) addLayer:(FlashViewLayerNode *) layer baseView:(UIView *)baseView;
 @end
 
 //所有动画数据

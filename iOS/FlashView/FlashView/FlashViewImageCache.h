@@ -10,6 +10,8 @@
 
 @interface FlashViewImageCache : NSObject
 
+@property (nonatomic, copy) NSString *imagePath;
+
 +(instancetype) cache;
 
 -(void) addImage:(UIImage *)image withName:(NSString *)name;

@@ -40,6 +40,21 @@ typedef enum : NSUInteger {
     
     //数据
     FlashViewNode *mFlashViewNode;
+    
+    CADisplayLink *mDisplayLink;
+    BOOL isPlaying;
+    
+    NSInteger mStartTimeMs;
+    NSInteger mLastFrameTimeMs;
+    
+    NSUInteger mFromIndex;
+    NSUInteger mToIndex;
+    
+    NSUInteger mLoopTimes;
+    
+    NSInteger mLastPlayIndex;
+    NSTimeInterval mLastPlayTime;
+    NSString *mPlayingAnimName;
 }
 
 //构造方法：flashName为flash文件名
@@ -188,9 +203,11 @@ typedef enum : NSUInteger {
         animNode.animName = anim[@"animName"];
         animNode.frameCount = [anim[@"frameMaxNum"] integerValue];
         [mFlashViewNode addAnim:animNode];
-        for (NSDictionary *layer in anim[@"layers"]) {
+        for (int i = 0; i < [anim[@"layers"] length]; i++) {
+            NSDictionary *layer = anim[@"layers"][i];
             FlashViewLayerNode *layerNode = [[FlashViewLayerNode alloc] init];
-            [animNode addLayer:layerNode];
+            layerNode.index = i;
+            [animNode addLayer:layerNode baseView:self];
             for (NSDictionary *keyFrame in layer[@"frames"]) {
                 FlashViewFrameNode *frameNode = [[FlashViewFrameNode alloc] init];
                 [layerNode addKeyFrame:frameNode];
@@ -237,6 +254,19 @@ typedef enum : NSUInteger {
         mFlashViewNode.frameRate = frameRate;
     }
     
+    NSString *imagePath = nil;
+    switch (mFileType) {
+        case FileTypeDocument:
+            imagePath = [NSString stringWithFormat:@"%@/%@/%@", mWritablePath, mFlashAnimDir, mFlashName];
+            break;
+        case FileTypeResource:
+            imagePath = [mMainBundle bundlePath];
+            break;
+        default:
+            break;
+    }
+    [FlashViewImageCache cache].imagePath = imagePath;
+    
     NSInteger imageCount = [dataReader readUShort];
     NSMutableArray *imageNames = [[NSMutableArray alloc] init];
     for (int i = 0; i < imageCount; i++) {
@@ -257,7 +287,8 @@ typedef enum : NSUInteger {
         NSInteger layerCount = [dataReader readUShort];
         for (int k = 0; k < layerCount; k++) {
             FlashViewLayerNode *layerNode = [[FlashViewLayerNode alloc] init];
-            [animNode addLayer:layerNode];
+            layerNode.index = k;
+            [animNode addLayer:layerNode baseView:self];
             NSInteger keyFrameCount = [dataReader readUShort];
             for (int l = 0; l < keyFrameCount; l++) {
                 FlashViewFrameNode *frameNode = [[FlashViewFrameNode alloc] init];
@@ -287,5 +318,105 @@ typedef enum : NSUInteger {
     }
     return YES;
 }
+
+-(void)updateToFrameIndex:(NSInteger)frameIndex{
+    if (!isPlaying) {
+        NSLog(@"updateToFrameIndex当前没有正在播放的动画");
+        return;
+    }
+    FlashViewAnimNode *animNode = mFlashViewNode.anims[mPlayingAnimName];
+    [animNode updateToIndex:frameIndex];
+}
+
+-(void)trigerEventWithIndex:(NSInteger)frameIndex{
+    if (!isPlaying) {
+        NSLog(@"trigerEventWithIndex当前没有正在播放的动画");
+        return;
+    }
+    FlashViewAnimNode *animNode = mFlashViewNode.anims[mPlayingAnimName];
+    [animNode trigerEventWithIndex:frameIndex];
+}
+
+-(NSInteger) currentTimeMs{
+    return [NSDate date].timeIntervalSince1970;
+}
+
+-(FlashViewAnimNode *) currAnimNode{
+    if (isPlaying) {
+        return mFlashViewNode.anims[mPlayingAnimName];
+    }
+    return nil;
+}
+
+//触发事件
+-(void) triggerEventWithCurrTime:(NSTimeInterval) currTime{
+    if (!isPlaying || mLastPlayIndex < 0) {
+        return;
+    }
+    
+    //从上次update之后，过了几帧，每一帧都要检查是否有事件
+    NSInteger passedFrames = floor((currTime - mLastPlayTime) / mFlashViewNode.oneFrameDurationMs);
+    for (NSInteger i = 0; i < passedFrames; i++) {
+        NSInteger frameIndex = mLastPlayIndex + 1 + i;
+        if (frameIndex > mToIndex) {
+            frameIndex = frameIndex - mToIndex + mFromIndex;
+        }
+        [self trigerEventWithIndex:frameIndex];
+    }
+}
+
+-(void) updateAnim:(CADisplayLink *)displayLink{
+    NSTimeInterval currTime = self.currentTimeMs;
+    NSTimeInterval passedTime = currTime - mStartTimeMs;
+    NSTimeInterval passedCount = passedTime / mFlashViewNode.oneFrameDurationMs;
+    NSUInteger animLen = mToIndex - mFromIndex + 1;
+    NSUInteger currIndex = (NSUInteger)passedCount % animLen;
+    
+    //播放
+    if (currIndex != mLastPlayIndex) {
+        [self updateToFrameIndex:currIndex];
+    }
+    
+    //触发事件
+    [self triggerEventWithCurrTime:currTime];
+    
+    //重置状态
+    mLastPlayIndex = currIndex;
+    //向前对齐
+    if (passedCount != (NSUInteger) passedCount) {
+        currTime = ceil(passedCount) * mFlashViewNode.oneFrameDurationMs;
+    }
+    mLastPlayTime = currTime;
+}
+
+-(CADisplayLink *)displayLink{
+    if (!mDisplayLink) {
+        mDisplayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(updateAnim:)];
+    }
+    return mDisplayLink;
+}
+
+-(void) playAnimWithName:(NSString *) animName fromIndex:(NSUInteger) fromIndex toIndex:(NSUInteger) toIndex loopTimes:(NSUInteger) loopTimes{
+    if (isPlaying) {
+        [self stopAnim];
+    }
+    mFromIndex = fromIndex;
+    mToIndex = toIndex;
+    mLoopTimes = loopTimes;
+    [self.displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
+    mStartTimeMs = self.currentTimeMs;
+}
+
+-(void) stopAnim{
+    isPlaying = NO;
+    mPlayingAnimName = nil;
+    mStartTimeMs = 0;
+    mFromIndex = 0;
+    mToIndex = 0;
+    mLoopTimes = 0;
+    mLastPlayIndex = -1;
+    [self.displayLink invalidate];
+}
+
 
 @end
