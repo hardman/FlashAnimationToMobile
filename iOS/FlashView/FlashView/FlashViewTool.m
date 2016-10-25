@@ -1,33 +1,19 @@
 //
-//  FlashViewImageCache.m
+//  FlashViewTool.m
 //  FlashView
 //
 //  Created by kaso on 24/10/16.
 //  Copyright © 2016年 kaso. All rights reserved.
 //
 
-#import "FlashViewImageCache.h"
+#import "FlashViewTool.h"
 
 
-@interface FlashViewImageCache()
+@interface FlashViewTool()
 @property (nonatomic, strong) NSMutableDictionary<NSString*, UIImage *> *images;
 @end
 
-@implementation FlashViewImageCache
-
-+(instancetype) cache{
-    static dispatch_once_t onceToken;
-    static FlashViewImageCache *sCache = nil;
-    dispatch_once(&onceToken, ^{
-        sCache = [[FlashViewImageCache alloc] init];
-    });
-    return sCache;
-}
-
-+(void) purge{
-    [[FlashViewImageCache cache].images removeAllObjects];
-}
-
+@implementation FlashViewTool
 -(NSMutableDictionary<NSString *,UIImage *> *)images{
     if (!_images) {
         _images = [[NSMutableDictionary alloc] init];
@@ -39,6 +25,10 @@
     if ([self imageWithName:name]) {
         return;
     }
+    self.images[name] = image;
+}
+
+-(void) replaceImage:(UIImage *)image withName:(NSString *)name{
     self.images[name] = image;
 }
 

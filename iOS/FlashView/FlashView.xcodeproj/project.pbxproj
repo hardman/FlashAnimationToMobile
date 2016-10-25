@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		A40149781C1FCC2100201BFA /* testpng.png in Resources */ = {isa = PBXBuildFile; fileRef = A40149771C1FCC2100201BFA /* testpng.png */; };
 		A40149A61C210F0800201BFA /* heiniao_chibang_01.png in Resources */ = {isa = PBXBuildFile; fileRef = A40149821C210F0800201BFA /* heiniao_chibang_01.png */; };
 		A40149A71C210F0800201BFA /* heiniao_chibang_02.png in Resources */ = {isa = PBXBuildFile; fileRef = A40149831C210F0800201BFA /* heiniao_chibang_02.png */; };
 		A40149A81C210F0800201BFA /* heiniao_chibang_03.png in Resources */ = {isa = PBXBuildFile; fileRef = A40149841C210F0800201BFA /* heiniao_chibang_03.png */; };
@@ -53,10 +52,11 @@
 		A43FA1E11D781C3B005319AE /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = A43FA1E01D781C3B005319AE /* libz.tbd */; };
 		A43FA1E41D7831F5005319AE /* TestFlashViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A43FA1E31D7831F5005319AE /* TestFlashViewController.m */; };
 		A43FA1E71D78322A005319AE /* TestFlashViewDownloadViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = A43FA1E61D78322A005319AE /* TestFlashViewDownloadViewController.m */; };
-		A45865E11DBE22E3007EED31 /* FlashViewImageCache.m in Sources */ = {isa = PBXBuildFile; fileRef = A45865E01DBE22E3007EED31 /* FlashViewImageCache.m */; };
-		A45865E41DBE231F007EED31 /* FlashDisplayView.m in Sources */ = {isa = PBXBuildFile; fileRef = A45865E31DBE231F007EED31 /* FlashDisplayView.m */; };
+		A45865E11DBE22E3007EED31 /* FlashViewTool.m in Sources */ = {isa = PBXBuildFile; fileRef = A45865E01DBE22E3007EED31 /* FlashViewTool.m */; };
+		A45866041DBF2F84007EED31 /* testFlash_testpng.png in Resources */ = {isa = PBXBuildFile; fileRef = A45866031DBF2F84007EED31 /* testFlash_testpng.png */; };
+		A45866061DBF2F96007EED31 /* testFlash.flajson in Resources */ = {isa = PBXBuildFile; fileRef = A45866051DBF2F96007EED31 /* testFlash.flajson */; };
 		A4740E991DB73B0E006CF2F3 /* FlashViewNew.m in Sources */ = {isa = PBXBuildFile; fileRef = A4740E981DB73B0E006CF2F3 /* FlashViewNew.m */; };
-		A4740E9C1DB73EF2006CF2F3 /* FlashViewDataReaderNew.m in Sources */ = {isa = PBXBuildFile; fileRef = A4740E9B1DB73EF2006CF2F3 /* FlashViewDataReaderNew.m */; };
+		A4740E9C1DB73EF2006CF2F3 /* FlashViewDataReader.m in Sources */ = {isa = PBXBuildFile; fileRef = A4740E9B1DB73EF2006CF2F3 /* FlashViewDataReader.m */; };
 		A4740E9F1DB740E3006CF2F3 /* FlashViewNode.m in Sources */ = {isa = PBXBuildFile; fileRef = A4740E9E1DB740E3006CF2F3 /* FlashViewNode.m */; };
 		A4A87E831C2827B300649A1A /* testDB_1.png in Resources */ = {isa = PBXBuildFile; fileRef = A4A87E6B1C2827B300649A1A /* testDB_1.png */; };
 		A4A87E841C2827B300649A1A /* testDB_10.png in Resources */ = {isa = PBXBuildFile; fileRef = A4A87E6C1C2827B300649A1A /* testDB_10.png */; };
@@ -122,19 +122,9 @@
 		A4AC4F8E1C1EA34000FFA174 /* laba_lan2.png in Resources */ = {isa = PBXBuildFile; fileRef = A4AC4F721C1EA34000FFA174 /* laba_lan2.png */; };
 		A4AC4F8F1C1EA34000FFA174 /* laba_lan3.png in Resources */ = {isa = PBXBuildFile; fileRef = A4AC4F731C1EA34000FFA174 /* laba_lan3.png */; };
 		A4AC4F901C1EA34000FFA174 /* laba.flajson in Resources */ = {isa = PBXBuildFile; fileRef = A4AC4F741C1EA34000FFA174 /* laba.flajson */; };
-		A4C28A5D1DB094EF000BF8DB /* test_biglove.png in Resources */ = {isa = PBXBuildFile; fileRef = A4C28A531DB094EF000BF8DB /* test_biglove.png */; };
-		A4C28A5F1DB094EF000BF8DB /* test_pinklove.png in Resources */ = {isa = PBXBuildFile; fileRef = A4C28A551DB094EF000BF8DB /* test_pinklove.png */; };
-		A4C28A601DB094EF000BF8DB /* test_ring.png in Resources */ = {isa = PBXBuildFile; fileRef = A4C28A561DB094EF000BF8DB /* test_ring.png */; };
-		A4C28A611DB094EF000BF8DB /* test_star.png in Resources */ = {isa = PBXBuildFile; fileRef = A4C28A571DB094EF000BF8DB /* test_star.png */; };
-		A4C28A621DB094EF000BF8DB /* test_xiajiezhi.png in Resources */ = {isa = PBXBuildFile; fileRef = A4C28A581DB094EF000BF8DB /* test_xiajiezhi.png */; };
-		A4C28A631DB094EF000BF8DB /* test_zhuizi01.png in Resources */ = {isa = PBXBuildFile; fileRef = A4C28A591DB094EF000BF8DB /* test_zhuizi01.png */; };
-		A4C28A641DB094EF000BF8DB /* test_zhuizi02.png in Resources */ = {isa = PBXBuildFile; fileRef = A4C28A5A1DB094EF000BF8DB /* test_zhuizi02.png */; };
-		A4C28A651DB094EF000BF8DB /* test_zhuizi03.png in Resources */ = {isa = PBXBuildFile; fileRef = A4C28A5B1DB094EF000BF8DB /* test_zhuizi03.png */; };
-		A4C28A661DB094EF000BF8DB /* test.flajson in Resources */ = {isa = PBXBuildFile; fileRef = A4C28A5C1DB094EF000BF8DB /* test.flajson */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		A40149771C1FCC2100201BFA /* testpng.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = testpng.png; path = FlashView/Resources/testpng.png; sourceTree = "<group>"; };
 		A40149821C210F0800201BFA /* heiniao_chibang_01.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = heiniao_chibang_01.png; sourceTree = "<group>"; };
 		A40149831C210F0800201BFA /* heiniao_chibang_02.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = heiniao_chibang_02.png; sourceTree = "<group>"; };
 		A40149841C210F0800201BFA /* heiniao_chibang_03.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = heiniao_chibang_03.png; sourceTree = "<group>"; };
@@ -189,14 +179,15 @@
 		A43FA1E31D7831F5005319AE /* TestFlashViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestFlashViewController.m; sourceTree = "<group>"; };
 		A43FA1E51D78322A005319AE /* TestFlashViewDownloadViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestFlashViewDownloadViewController.h; sourceTree = "<group>"; };
 		A43FA1E61D78322A005319AE /* TestFlashViewDownloadViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TestFlashViewDownloadViewController.m; sourceTree = "<group>"; };
-		A45865DF1DBE22E3007EED31 /* FlashViewImageCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlashViewImageCache.h; sourceTree = "<group>"; };
-		A45865E01DBE22E3007EED31 /* FlashViewImageCache.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlashViewImageCache.m; sourceTree = "<group>"; };
-		A45865E21DBE231F007EED31 /* FlashDisplayView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlashDisplayView.h; sourceTree = "<group>"; };
-		A45865E31DBE231F007EED31 /* FlashDisplayView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlashDisplayView.m; sourceTree = "<group>"; };
+		A45865DF1DBE22E3007EED31 /* FlashViewTool.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlashViewTool.h; sourceTree = "<group>"; };
+		A45865E01DBE22E3007EED31 /* FlashViewTool.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlashViewTool.m; sourceTree = "<group>"; };
+		A45866031DBF2F84007EED31 /* testFlash_testpng.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testFlash_testpng.png; sourceTree = "<group>"; };
+		A45866051DBF2F96007EED31 /* testFlash.flajson */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = testFlash.flajson; path = testFlash/testFlash.flajson; sourceTree = "<group>"; };
+		A458661E1DBF4545007EED31 /* FlashViewCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlashViewCommon.h; sourceTree = "<group>"; };
 		A4740E971DB73B0E006CF2F3 /* FlashViewNew.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlashViewNew.h; sourceTree = "<group>"; };
 		A4740E981DB73B0E006CF2F3 /* FlashViewNew.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlashViewNew.m; sourceTree = "<group>"; };
-		A4740E9A1DB73EF2006CF2F3 /* FlashViewDataReaderNew.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlashViewDataReaderNew.h; sourceTree = "<group>"; };
-		A4740E9B1DB73EF2006CF2F3 /* FlashViewDataReaderNew.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlashViewDataReaderNew.m; sourceTree = "<group>"; };
+		A4740E9A1DB73EF2006CF2F3 /* FlashViewDataReader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlashViewDataReader.h; sourceTree = "<group>"; };
+		A4740E9B1DB73EF2006CF2F3 /* FlashViewDataReader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlashViewDataReader.m; sourceTree = "<group>"; };
 		A4740E9D1DB740E3006CF2F3 /* FlashViewNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlashViewNode.h; sourceTree = "<group>"; };
 		A4740E9E1DB740E3006CF2F3 /* FlashViewNode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlashViewNode.m; sourceTree = "<group>"; };
 		A4A87E6B1C2827B300649A1A /* testDB_1.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testDB_1.png; sourceTree = "<group>"; };
@@ -268,15 +259,6 @@
 		A4AC4F721C1EA34000FFA174 /* laba_lan2.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = laba_lan2.png; sourceTree = "<group>"; };
 		A4AC4F731C1EA34000FFA174 /* laba_lan3.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = laba_lan3.png; sourceTree = "<group>"; };
 		A4AC4F741C1EA34000FFA174 /* laba.flajson */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = laba.flajson; sourceTree = "<group>"; };
-		A4C28A531DB094EF000BF8DB /* test_biglove.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = test_biglove.png; sourceTree = "<group>"; };
-		A4C28A551DB094EF000BF8DB /* test_pinklove.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = test_pinklove.png; sourceTree = "<group>"; };
-		A4C28A561DB094EF000BF8DB /* test_ring.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = test_ring.png; sourceTree = "<group>"; };
-		A4C28A571DB094EF000BF8DB /* test_star.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = test_star.png; sourceTree = "<group>"; };
-		A4C28A581DB094EF000BF8DB /* test_xiajiezhi.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = test_xiajiezhi.png; sourceTree = "<group>"; };
-		A4C28A591DB094EF000BF8DB /* test_zhuizi01.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = test_zhuizi01.png; sourceTree = "<group>"; };
-		A4C28A5A1DB094EF000BF8DB /* test_zhuizi02.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = test_zhuizi02.png; sourceTree = "<group>"; };
-		A4C28A5B1DB094EF000BF8DB /* test_zhuizi03.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = test_zhuizi03.png; sourceTree = "<group>"; };
-		A4C28A5C1DB094EF000BF8DB /* test.flajson */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = test.flajson; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -359,19 +341,35 @@
 			path = minizip;
 			sourceTree = "<group>";
 		};
+		A45866001DBF2F59007EED31 /* testFlash */ = {
+			isa = PBXGroup;
+			children = (
+				A45866031DBF2F84007EED31 /* testFlash_testpng.png */,
+			);
+			path = testFlash;
+			sourceTree = "<group>";
+		};
+		A45866211DBF4622007EED31 /* Downloader */ = {
+			isa = PBXGroup;
+			children = (
+				A43FA1CA1D7804EB005319AE /* Zip */,
+				A43FA1C71D7803AB005319AE /* FlashViewDownloader.h */,
+				A43FA1C81D7803AB005319AE /* FlashViewDownloader.m */,
+			);
+			name = Downloader;
+			sourceTree = "<group>";
+		};
 		A4740E961DB73AFA006CF2F3 /* FlashViewNew */ = {
 			isa = PBXGroup;
 			children = (
 				A4740E971DB73B0E006CF2F3 /* FlashViewNew.h */,
 				A4740E981DB73B0E006CF2F3 /* FlashViewNew.m */,
-				A4740E9A1DB73EF2006CF2F3 /* FlashViewDataReaderNew.h */,
-				A4740E9B1DB73EF2006CF2F3 /* FlashViewDataReaderNew.m */,
+				A4740E9A1DB73EF2006CF2F3 /* FlashViewDataReader.h */,
+				A4740E9B1DB73EF2006CF2F3 /* FlashViewDataReader.m */,
 				A4740E9D1DB740E3006CF2F3 /* FlashViewNode.h */,
 				A4740E9E1DB740E3006CF2F3 /* FlashViewNode.m */,
-				A45865DF1DBE22E3007EED31 /* FlashViewImageCache.h */,
-				A45865E01DBE22E3007EED31 /* FlashViewImageCache.m */,
-				A45865E21DBE231F007EED31 /* FlashDisplayView.h */,
-				A45865E31DBE231F007EED31 /* FlashDisplayView.m */,
+				A45865DF1DBE22E3007EED31 /* FlashViewTool.h */,
+				A45865E01DBE22E3007EED31 /* FlashViewTool.m */,
 			);
 			name = FlashViewNew;
 			sourceTree = "<group>";
@@ -438,9 +436,10 @@
 		A4AC4F391C1EA03000FFA174 /* FlashView */ = {
 			isa = PBXGroup;
 			children = (
+				A458661E1DBF4545007EED31 /* FlashViewCommon.h */,
 				A4740E961DB73AFA006CF2F3 /* FlashViewNew */,
-				A43FA1CA1D7804EB005319AE /* Zip */,
 				A4AC4F521C1EA13800FFA174 /* FlashView */,
+				A45866211DBF4622007EED31 /* Downloader */,
 				A4AC4F3D1C1EA03000FFA174 /* AppDelegate.h */,
 				A4AC4F3E1C1EA03000FFA174 /* AppDelegate.m */,
 				A4AC4F401C1EA03000FFA174 /* ViewController.h */,
@@ -469,7 +468,6 @@
 		A4AC4F511C1EA0D800FFA174 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				A40149771C1FCC2100201BFA /* testpng.png */,
 				A4AC4F561C1EA34000FFA174 /* flashAnims */,
 			);
 			name = Resources;
@@ -480,8 +478,6 @@
 			children = (
 				A4AC4F531C1EA15B00FFA174 /* FlashView.h */,
 				A4AC4F541C1EA15B00FFA174 /* FlashView.m */,
-				A43FA1C71D7803AB005319AE /* FlashViewDownloader.h */,
-				A43FA1C81D7803AB005319AE /* FlashViewDownloader.m */,
 			);
 			name = FlashView;
 			sourceTree = "<group>";
@@ -489,8 +485,8 @@
 		A4AC4F561C1EA34000FFA174 /* flashAnims */ = {
 			isa = PBXGroup;
 			children = (
-				A4C28A521DB094EF000BF8DB /* test */,
-				A4C28A5C1DB094EF000BF8DB /* test.flajson */,
+				A45866001DBF2F59007EED31 /* testFlash */,
+				A45866051DBF2F96007EED31 /* testFlash.flajson */,
 				A4A87E9B1C2900E500649A1A /* bieshu */,
 				A4A87EA01C2900E500649A1A /* bieshu.flajson */,
 				A4A87E6A1C2827B300649A1A /* testDB */,
@@ -544,21 +540,6 @@
 				A4AC4F731C1EA34000FFA174 /* laba_lan3.png */,
 			);
 			path = laba;
-			sourceTree = "<group>";
-		};
-		A4C28A521DB094EF000BF8DB /* test */ = {
-			isa = PBXGroup;
-			children = (
-				A4C28A531DB094EF000BF8DB /* test_biglove.png */,
-				A4C28A551DB094EF000BF8DB /* test_pinklove.png */,
-				A4C28A561DB094EF000BF8DB /* test_ring.png */,
-				A4C28A571DB094EF000BF8DB /* test_star.png */,
-				A4C28A581DB094EF000BF8DB /* test_xiajiezhi.png */,
-				A4C28A591DB094EF000BF8DB /* test_zhuizi01.png */,
-				A4C28A5A1DB094EF000BF8DB /* test_zhuizi02.png */,
-				A4C28A5B1DB094EF000BF8DB /* test_zhuizi03.png */,
-			);
-			path = test;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -618,31 +599,27 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A4C28A5D1DB094EF000BF8DB /* test_biglove.png in Resources */,
 				A40149C61C210F0800201BFA /* heiniao_yougebo_2.png in Resources */,
 				A4A87E941C2827B300649A1A /* testDB_c1.png in Resources */,
 				A4AC4F7F1C1EA34000FFA174 /* callTextAnim_xdal.png in Resources */,
 				A4A87EA41C2900E500649A1A /* bieshu_xinxin.png in Resources */,
 				A4AC4F861C1EA34000FFA174 /* callTextAnim.flajson in Resources */,
 				A4AC4F7B1C1EA34000FFA174 /* callTextAnim_n.png in Resources */,
-				A40149781C1FCC2100201BFA /* testpng.png in Resources */,
 				A4A87E8A1C2827B300649A1A /* testDB_16.png in Resources */,
 				A4A87E841C2827B300649A1A /* testDB_10.png in Resources */,
 				A4AC4F821C1EA34000FFA174 /* callTextAnim_xi.png in Resources */,
-				A4C28A5F1DB094EF000BF8DB /* test_pinklove.png in Resources */,
 				A4AC4F761C1EA34000FFA174 /* callTextAnim_c.png in Resources */,
 				A4AC4F4A1C1EA03000FFA174 /* LaunchScreen.storyboard in Resources */,
 				A4AC4F8A1C1EA34000FFA174 /* laba_bai1.png in Resources */,
-				A4C28A651DB094EF000BF8DB /* test_zhuizi03.png in Resources */,
 				A4AC4F901C1EA34000FFA174 /* laba.flajson in Resources */,
 				A4AC4F8C1C1EA34000FFA174 /* laba_bai3.png in Resources */,
 				A40149C41C210F0800201BFA /* heiniao_yinzi.png in Resources */,
-				A4C28A601DB094EF000BF8DB /* test_ring.png in Resources */,
 				A4AC4F471C1EA03000FFA174 /* Assets.xcassets in Resources */,
 				A40149C11C210F0800201BFA /* heiniao_tui_2.png in Resources */,
 				A40149AA1C210F0800201BFA /* heiniao_chibang_05.png in Resources */,
 				A40149A61C210F0800201BFA /* heiniao_chibang_01.png in Resources */,
 				A40149AE1C210F0800201BFA /* heiniao_fazhang.png in Resources */,
+				A45866061DBF2F96007EED31 /* testFlash.flajson in Resources */,
 				A40149C71C210F0800201BFA /* heiniao_zuogebo_1.png in Resources */,
 				A4AC4F8E1C1EA34000FFA174 /* laba_lan2.png in Resources */,
 				A40149AF1C210F0800201BFA /* heiniao_fazhangtexiao_001.png in Resources */,
@@ -675,6 +652,7 @@
 				A4A87E931C2827B300649A1A /* testDB_9.png in Resources */,
 				A40149C01C210F0800201BFA /* heiniao_tui_1.png in Resources */,
 				A4A87E971C2827B300649A1A /* testDB_c4.png in Resources */,
+				A45866041DBF2F84007EED31 /* testFlash_testpng.png in Resources */,
 				A4AC4F8F1C1EA34000FFA174 /* laba_lan3.png in Resources */,
 				A4A87E901C2827B300649A1A /* testDB_6.png in Resources */,
 				A40149C31C210F0800201BFA /* heiniao_tui_4.png in Resources */,
@@ -684,12 +662,10 @@
 				A4AC4F451C1EA03000FFA174 /* Main.storyboard in Resources */,
 				A40149B21C210F0800201BFA /* heiniao_fazhangtexiao_004.png in Resources */,
 				A4AC4F811C1EA34000FFA174 /* callTextAnim_xg.png in Resources */,
-				A4C28A611DB094EF000BF8DB /* test_star.png in Resources */,
 				A4A87E891C2827B300649A1A /* testDB_15.png in Resources */,
 				A4A87E9A1C2827B300649A1A /* testDB.flajson in Resources */,
 				A40149BB1C210F0800201BFA /* heiniao_jiao_3.png in Resources */,
 				A4A87E8C1C2827B300649A1A /* testDB_2.png in Resources */,
-				A4C28A661DB094EF000BF8DB /* test.flajson in Resources */,
 				A40149BE1C210F0800201BFA /* heiniao_shenti_xia.png in Resources */,
 				A4AC4F8D1C1EA34000FFA174 /* laba_lan1.png in Resources */,
 				A4AC4F781C1EA34000FFA174 /* callTextAnim_g.png in Resources */,
@@ -698,7 +674,6 @@
 				A4A87E881C2827B300649A1A /* testDB_14.png in Resources */,
 				A4AC4F831C1EA34000FFA174 /* callTextAnim_xn.png in Resources */,
 				A4AC4F771C1EA34000FFA174 /* callTextAnim_DAA.png in Resources */,
-				A4C28A631DB094EF000BF8DB /* test_zhuizi01.png in Resources */,
 				A4A87E961C2827B300649A1A /* testDB_c3.png in Resources */,
 				A4AC4F751C1EA34000FFA174 /* callTextAnim_a.png in Resources */,
 				A40149B71C210F0800201BFA /* heiniao_fazhangtexiao_009.png in Resources */,
@@ -708,10 +683,8 @@
 				A40149AD1C210F0800201BFA /* heiniao_chibang_08.png in Resources */,
 				A4A87EA31C2900E500649A1A /* bieshu_400013.png in Resources */,
 				A4AC4F7E1C1EA34000FFA174 /* callTextAnim_v.png in Resources */,
-				A4C28A621DB094EF000BF8DB /* test_xiajiezhi.png in Resources */,
 				A40149B31C210F0800201BFA /* heiniao_fazhangtexiao_005.png in Resources */,
 				A40149BC1C210F0800201BFA /* heiniao_jiao_4.png in Resources */,
-				A4C28A641DB094EF000BF8DB /* test_zhuizi02.png in Resources */,
 				A4A87E851C2827B300649A1A /* testDB_11.png in Resources */,
 				A4A87E981C2827B300649A1A /* testDB_c5.png in Resources */,
 				A40149C81C210F0800201BFA /* heiniao_zuogebo_2.png in Resources */,
@@ -741,14 +714,13 @@
 				A43FA1DA1D7804EB005319AE /* zip.c in Sources */,
 				A4AC4F3C1C1EA03000FFA174 /* main.m in Sources */,
 				A43FA1D81D7804EB005319AE /* mztools.c in Sources */,
-				A4740E9C1DB73EF2006CF2F3 /* FlashViewDataReaderNew.m in Sources */,
+				A4740E9C1DB73EF2006CF2F3 /* FlashViewDataReader.m in Sources */,
 				A43FA1DB1D7804EB005319AE /* ZipArchive.m in Sources */,
 				A4740E991DB73B0E006CF2F3 /* FlashViewNew.m in Sources */,
 				A43FA1E71D78322A005319AE /* TestFlashViewDownloadViewController.m in Sources */,
 				A4AC4F551C1EA15B00FFA174 /* FlashView.m in Sources */,
 				A4740E9F1DB740E3006CF2F3 /* FlashViewNode.m in Sources */,
-				A45865E41DBE231F007EED31 /* FlashDisplayView.m in Sources */,
-				A45865E11DBE22E3007EED31 /* FlashViewImageCache.m in Sources */,
+				A45865E11DBE22E3007EED31 /* FlashViewTool.m in Sources */,
 				A43FA1D91D7804EB005319AE /* unzip.c in Sources */,
 				A43FA1C91D7803AB005319AE /* FlashViewDownloader.m in Sources */,
 			);

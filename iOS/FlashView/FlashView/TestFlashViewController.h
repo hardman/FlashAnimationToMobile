@@ -10,4 +10,6 @@
 
 @interface TestFlashViewController : UIViewController
 
+@property (nonatomic, unsafe_unretained) BOOL isNewFlashAnim;
+
 @end

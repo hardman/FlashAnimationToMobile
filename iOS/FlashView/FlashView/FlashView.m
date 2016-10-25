@@ -5,6 +5,7 @@
  */
 
 #import "FlashView.h"
+#import "FlashViewDataReader.h"
 
 //表示文件是在Resource里还是在Document里
 typedef enum : NSUInteger {
@@ -37,73 +38,6 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
     c.a = a;
     return c;
 }
-
-//读取二进制数据帮助宏
-#define READ_DATA(type) \
-type ret; \
-int size = sizeof(ret); \
-[mData getBytes:&ret range:NSMakeRange(mIndex, size)]; \
-mIndex += size; \
-return ret;
-
-//读取二进制数据帮助类
-@interface FlashDataReader : NSObject
-
-- (instancetype)initWithNSData:(NSData *)data;
-
--(BOOL) readBool;
-
--(uint16_t) readUShort;
-
--(Float32) readFloat;
-
--(uint8_t) readUChar;
-
--(NSString *) readNSString;
-
-@end
-
-//读取二进制文件的类
-@implementation FlashDataReader{
-    //当前读取到的位置
-    int mIndex;
-    //数据源
-    NSData *mData;
-}
-
-- (instancetype)initWithNSData:(NSData *)data{
-    if (self = [super init]) {
-        mData = data;
-        mIndex = 0;
-    }
-    return self;
-}
-
--(BOOL) readBool{
-    READ_DATA(BOOL);
-}
-
--(uint8_t) readUChar{
-    READ_DATA(uint8_t);
-}
-
--(uint16_t) readUShort{
-    READ_DATA(uint16_t);
-}
-
--(Float32) readFloat{
-    READ_DATA(Float32);
-}
-
-//字符串前需要有一个表示字符串长度的数字
--(NSString *)readNSString{
-    uint16_t nameLen = [self readUShort];
-    NSData * data = [mData subdataWithRange:NSMakeRange(mIndex, nameLen)];
-    mIndex += nameLen;
-    return [[NSString alloc] initWithData:data encoding: NSUTF8StringEncoding];
-}
-
-@end
 
 @implementation FlashView{
     //flash动画文件名
@@ -216,33 +150,6 @@ return ret;
             mDesignResolutionScale = CGPointMake(1, 1);
             break;
     }
-}
-
-+(BOOL) isAnimExist:(NSString *)flashName{
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSBundle *mainBundle = [NSBundle mainBundle];
-    NSString *writablePath = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-    //先查找是否存在flajson文件，不存在则查找flabin。都不存在则初始化错误。并且确定文件是在Resource中还是在Document中
-    NSString * filePath = [mainBundle pathForResource:[NSString stringWithFormat:@"%@.flajson", flashName] ofType:nil];
-    if (!filePath) {
-        filePath = [mainBundle pathForResource:[NSString stringWithFormat:@"%@.flabin", flashName] ofType:nil];
-        if (!filePath) {
-            filePath = [NSString stringWithFormat:@"%@/%@/%@.flajson", writablePath, FLASH_VIEW_DEFAULT_DIR_NAME, flashName];
-            if ([fileManager fileExistsAtPath:filePath]) {
-                return YES;
-            }else{
-                filePath = [NSString stringWithFormat:@"%@/%@/%@.flabin", writablePath, FLASH_VIEW_DEFAULT_DIR_NAME, flashName];
-                if ([fileManager fileExistsAtPath:filePath]) {
-                    return YES;
-                }
-            }
-        }else{
-            return YES;
-        }
-    }else{
-        return YES;
-    }
-    return NO;
 }
 
 //私有初始化函数
@@ -664,7 +571,7 @@ return ret;
  * 重新把二进制数据读取成一个dict是为了和Json数据读取方式共用一套生成关键帧对象的代码。
  * 因为两种数据解析方式，当读取到数据后，处理方式一摸一样，二者统一的关键就在于这个方法。
  */
--(NSMutableDictionary *) readKeyFrame:(FlashDataReader *)reader imageArr:(NSMutableArray *)imageArr{
+-(NSMutableDictionary *) readKeyFrame:(FlashViewDataReader *)reader imageArr:(NSMutableArray *)imageArr{
     NSMutableDictionary *dict = [[NSMutableDictionary alloc] init];
     BOOL isEmpty = [reader readBool];
     [dict setObject:@(isEmpty) forKey:@"isEmpty"];
@@ -817,7 +724,7 @@ return ret;
     mImages = [[NSMutableDictionary alloc] init];
     NSMutableArray *imagesArr = [[NSMutableArray alloc] init];
     
-    FlashDataReader *reader = [[FlashDataReader alloc] initWithNSData:mData];
+    FlashViewDataReader *reader = [[FlashViewDataReader alloc] initWithNSData:mData];
     
     mFrameRate = [reader readUShort];
     //解析images

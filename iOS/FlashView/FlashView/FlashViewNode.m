@@ -7,11 +7,17 @@
 //
 
 #import "FlashViewNode.h"
-#import "FlashViewImageCache.h"
+#import "FlashViewTool.h"
 
 @implementation FlashViewBaseNode
--(void)updateToIndex:(NSInteger)index{}
--(void)trigerEventWithIndex:(NSInteger)index{}
+-(void) updateToIndex:(NSInteger)index{}
+-(void) trigerEventWithIndex:(NSInteger)index delegate:(id<FlashViewDelegate>)delegate{}
+-(void) onReady{}
+-(void) onClean{}
+
+-(void)dealloc{
+    [self onClean];
+}
 @end
 //帧数据
 @implementation FlashViewFrameNode
@@ -19,13 +25,25 @@
 
 //层数据
 @interface FlashViewLayerNode()
-@property (nonatomic, weak) UIView *baseView;
 @property (nonatomic, strong) CALayer *layer;
 @property (nonatomic, strong) NSMutableArray<FlashViewFrameNode *> *keyFrames;
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, FlashViewFrameNode *> *frameDict;
 @end
 
 @implementation FlashViewLayerNode
+
+-(void) onReady{
+    [self createFrameDict];
+}
+
+-(void) onClean{
+    [_layer removeFromSuperlayer];
+    _layer = nil;
+    _keyFrames = nil;
+    _frameDict = nil;
+    _imageName = nil;
+    _index = 0;
+}
 
 -(NSMutableDictionary<NSNumber *,FlashViewFrameNode *> *)frameDict{
     if (!_frameDict) {
@@ -65,26 +83,22 @@
     return @(ret);
 }
 
--(FlashViewFrameNode *)frameNodeWithIndex:(NSInteger) index{
-    FlashViewFrameNode *targetFrameNode = self.frameDict[@(index)];
-    if (!targetFrameNode) {
-        FlashViewFrameNode *currFrameNode = nil;
+-(void) createFrameDict{
+    if (self.frameDict.count > 0) {
+        return;
+    }
+    for (int i = 0; i < self.keyFrames.count; i++) {
+        FlashViewFrameNode *currFrameNode = self.keyFrames[i];
         FlashViewFrameNode *nextFrameNode = nil;
-        for (int i = 0; i < self.keyFrames.count; i++) {
-            FlashViewFrameNode *frameNode = self.keyFrames[i];
-            if (index >= frameNode.frameIndex) {
-                currFrameNode = frameNode;
-                if (i < self.keyFrames.count - 1) {
-                    nextFrameNode = self.keyFrames[i + 1];
-                }
-                break;
-            }
+        if (currFrameNode.isTween && i < self.keyFrames.count - 1) {
+            nextFrameNode = self.keyFrames[i + 1];
         }
-        if (index <= currFrameNode.frameIndex + currFrameNode.duration) {
-            if (!nextFrameNode || !currFrameNode.isTween) {
+        for (int j = currFrameNode.frameIndex; j < currFrameNode.frameIndex + currFrameNode.duration; j++) {
+            FlashViewFrameNode *targetFrameNode = nil;
+            if (!nextFrameNode) {
                 targetFrameNode = currFrameNode;
             }else{
-                CGFloat per = (index - currFrameNode.frameIndex) * 1.0 / (nextFrameNode.frameIndex - currFrameNode.frameIndex);
+                CGFloat per = (j - currFrameNode.frameIndex) * 1.0 / (nextFrameNode.frameIndex - currFrameNode.frameIndex);
                 targetFrameNode = [[FlashViewFrameNode alloc] init];
                 targetFrameNode.x = [[self getPerValue:nextFrameNode old:currFrameNode key:@"x" per:per] floatValue];
                 targetFrameNode.y = [[self getPerValue:nextFrameNode old:currFrameNode key:@"y" per:per] floatValue];
@@ -96,64 +110,99 @@
                 
                 targetFrameNode.alpha = [[self getPerValue:nextFrameNode old:currFrameNode key:@"alpha" per:per] floatValue];
                 targetFrameNode.r = [[self getPerValue:nextFrameNode old:currFrameNode key:@"r" per:per] charValue];
-                targetFrameNode.g = currFrameNode.g + (nextFrameNode.g - currFrameNode.g) * per;
-                targetFrameNode.b = currFrameNode.b + (nextFrameNode.b - currFrameNode.b) * per;
-                targetFrameNode.a = currFrameNode.a + (nextFrameNode.a - currFrameNode.a) * per;
+                targetFrameNode.g = [[self getPerValue:nextFrameNode old:currFrameNode key:@"g" per:per] charValue];
+                targetFrameNode.b = [[self getPerValue:nextFrameNode old:currFrameNode key:@"b" per:per] charValue];
+                targetFrameNode.a = [[self getPerValue:nextFrameNode old:currFrameNode key:@"a" per:per] charValue];
+                
+                targetFrameNode.imageName = currFrameNode.imageName;
             }
+            self.frameDict[@(j)] = targetFrameNode;
         }
-        self.frameDict[@(index)] = targetFrameNode;
     }
-    
-    return targetFrameNode;
 }
 
+//角度转弧度
+#define ANGLE_TO_RADIUS(angle) (0.01745329252f * (angle))
+
 -(void) updateLayerViewWithFrameNode:(FlashViewFrameNode *)frameNode{
-    if (!frameNode) {
+    if (!frameNode || frameNode.isEmpty) {
         [self.layer removeFromSuperlayer];
         return;
     }
     CALayer *layer = self.layer;
     if (!layer.superlayer) {
-        [self.baseView.layer addSublayer:layer];
+        [self.tool.baseView.layer addSublayer:layer];
     }
+    
+    if (!self.tool.isUseImplicitAnim) {
+        //关闭隐式动画
+        [CATransaction begin];
+        [CATransaction setDisableActions:YES];
+    }
+    
     if (!self.imageName || ![frameNode.imageName isEqualToString:self.imageName]) {
-        FlashViewImageCache *cache = [FlashViewImageCache cache];
-        UIImage *image = [cache imageWithName:frameNode.imageName];
+        UIImage *image = [self.tool imageWithName:frameNode.imageName];
         if (!image) {
-            image = [UIImage imageWithContentsOfFile:[NSString stringWithFormat:@"%@/%@", cache.imagePath, frameNode.imageName]];
-            [cache addImage:image withName:frameNode.imageName];
+            image = [UIImage imageWithContentsOfFile:[NSString stringWithFormat:@"%@/%@", self.tool.imagePath, frameNode.imageName]];
+            [self.tool addImage:image withName:frameNode.imageName];
         }
         layer.contents = (__bridge id _Nullable)(image.CGImage);
+        layer.bounds = CGRectMake(0, 0, image.size.width * self.tool.scale.x, image.size.height * self.tool.scale.y);
+        layer.position = CGPointMake(self.tool.baseView.layer.bounds.size.width / 2, self.tool.baseView.layer.bounds.size.height / 2);
         self.imageName = frameNode.imageName;
     }
-    CATransform3D t = CATransform3DIdentity;
-    t.m11 = frameNode.scaleX;
-    t.m12 = frameNode.skewX;
-    t.m13 = 0;
-    t.m14 = 0;
-    t.m21 = frameNode.skewY;
-    t.m22 = frameNode.scaleX;
-    t.m23 = 0;
-    t.m24 = 0;
-    t.m31 = 0;
-    t.m32 = 0;
-    t.m33 = 1;
-    t.m34 = 0;
-    t.m41 = frameNode.x;
-    t.m42 = frameNode.y;
-    t.m43 = self.index;
-    t.m44 = 1;
-    layer.transform = t;
+    
+    CGAffineTransform transform = CGAffineTransformIdentity;
+    //旋转
+    if(frameNode.skewX == frameNode.skewY){
+        float radius = ANGLE_TO_RADIUS(frameNode.skewX);
+        transform = CGAffineTransformMake(cosf(radius), sinf(radius), -sinf(radius), cosf(radius), 0, 0);
+    } else {
+        float radiusX = ANGLE_TO_RADIUS(frameNode.skewX);
+        float radiusY = ANGLE_TO_RADIUS(frameNode.skewY);
+        float cx = cosf(radiusX);
+        float sx = sinf(radiusX);
+        float cy = cosf(radiusY);
+        float sy = sinf(radiusY);
+        
+        float a = cy * transform.a - sx * transform.b;
+        float b = sy * transform.a + cx * transform.b;
+        float c = cy * transform.c - sx * transform.d;
+        float d = sy * transform.c + cx * transform.d;
+        float tx = cy * transform.tx - sx * transform.ty;
+        float ty = sy * transform.tx + cx * transform.ty;
+        
+        transform = CGAffineTransformMake(a, b, c, d, tx, ty);
+    }
+    
+    //缩放
+    transform = CGAffineTransformScale(transform, frameNode.scaleX, frameNode.scaleY);
+    
+    //平移
+    transform.tx = frameNode.x * self.tool.scale.x;
+    transform.ty = -frameNode.y * self.tool.scale.y;
+    
+    CATransform3D t3d = CATransform3DMakeAffineTransform(transform);
+    t3d.m43 = self.index;
+    layer.transform = t3d;
+    
+    //透明度
+    self.layer.opacity = frameNode.alpha / 255;
+    
+    if (!self.tool.isUseImplicitAnim) {
+        //关闭隐式动画
+        [CATransaction commit];
+    }
 }
 
 -(void)updateToIndex:(NSInteger)index{
-    [self updateLayerViewWithFrameNode:[self frameNodeWithIndex:index]];
+    [self updateLayerViewWithFrameNode:self.frameDict[@(index)]];
 }
 
--(void)trigerEventWithIndex:(NSInteger)index{
-    FlashViewFrameNode *frameNode = [self frameNodeWithIndex:index];
+-(void)trigerEventWithIndex:(NSInteger)index delegate:(id<FlashViewDelegate>)delegate{
+    FlashViewFrameNode *frameNode = self.frameDict[@(index)];
     if (frameNode.mark && frameNode.mark) {
-        NSLog(@"trigger mark %@", frameNode.mark);
+        [delegate onEvent:FlashViewEventMark data:frameNode.mark];
     }
 }
 
@@ -176,11 +225,21 @@
 
 @implementation FlashViewAnimNode
 
--(void) addLayer:(FlashViewLayerNode *) layer baseView:(UIView *)baseView{
-    [(NSMutableArray *)self.layers addObject:layer];
-    if (!layer.baseView) {
-        layer.baseView = baseView;
+-(void)onReady{
+    for (FlashViewLayerNode *layerNode in self.layers) {
+        [layerNode onReady];
     }
+}
+
+-(void)onClean{
+    for (FlashViewLayerNode *layerNode in self.layers) {
+        [layerNode onClean];
+    }
+    _layers = nil;
+}
+
+-(void) addLayer:(FlashViewLayerNode *) layer{
+    [(NSMutableArray *)self.layers addObject:layer];
 }
 
 -(NSMutableArray<FlashViewLayerNode *> *)layers{
@@ -196,9 +255,9 @@
     }
 }
 
--(void)trigerEventWithIndex:(NSInteger)index{
+-(void)trigerEventWithIndex:(NSInteger)index delegate:(id<FlashViewDelegate>)delegate{
     for (FlashViewLayerNode *layerNode in self.layers) {
-        [layerNode trigerEventWithIndex:index];
+        [layerNode trigerEventWithIndex:index delegate:delegate];
     }
 }
 
@@ -211,6 +270,21 @@
 
 @implementation FlashViewNode
 
+-(void)onReady{
+    for (NSString *key in self.anims) {
+        FlashViewAnimNode *animNode = self.anims[key];
+        [animNode onReady];
+    }
+}
+
+-(void)onClean{
+    for (NSString *key in self.anims) {
+        FlashViewAnimNode *animNode = self.anims[key];
+        [animNode onClean];
+    }
+    _anims = nil;
+}
+
 -(void) addAnim:(FlashViewAnimNode *)anim{
     [(NSMutableDictionary *)self.anims setObject:anim forKey:anim.animName];
 }
@@ -221,6 +295,7 @@
     }
     return _anims;
 }
+
 @end
 
 

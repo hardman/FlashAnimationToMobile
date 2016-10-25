@@ -1,12 +1,12 @@
 //
-//  FlashViewDataReaderNew.m
+//  FlashViewDataReader.m
 //  FlashView
 //
 //  Created by kaso on 19/10/16.
 //  Copyright © 2016年 kaso. All rights reserved.
 //
 
-#import "FlashViewDataReaderNew.h"
+#import "FlashViewDataReader.h"
 
 //读取二进制数据帮助宏
 #define READ_DATA(type) \
@@ -16,7 +16,7 @@ int size = sizeof(ret); \
 mIndex += size; \
 return ret;
 
-@implementation FlashViewDataReaderNew{
+@implementation FlashViewDataReader{
     //当前读取到的位置
     int mIndex;
     //数据源

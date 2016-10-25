@@ -7,9 +7,9 @@
 //
 
 #import "FlashViewNew.h"
-#import "FlashViewImageCache.h"
+#import "FlashViewTool.h"
 #import "FlashViewNode.h"
-#import "FlashViewDataReaderNew.h"
+#import "FlashViewDataReader.h"
 //表示文件是在Resource里还是在Document里
 typedef enum : NSUInteger {
     FileTypeNone,
@@ -24,6 +24,9 @@ typedef enum : NSUInteger {
     FileDataTypeBin,
 } FlashFileDataType;
 
+@interface FlashViewNew()<FlashViewDelegate>
+@property (nonatomic, strong) FlashViewTool *tool;
+@end
 @implementation FlashViewNew{
     //flash动画文件名
     NSString *mFlashName;
@@ -35,9 +38,6 @@ typedef enum : NSUInteger {
     FlashFileDataType mFileDataType;
     FlashFileType mFileType;
     
-    //图片
-    FlashViewImageCache *mImageCache;
-    
     //数据
     FlashViewNode *mFlashViewNode;
     
@@ -47,14 +47,17 @@ typedef enum : NSUInteger {
     NSInteger mStartTimeMs;
     NSInteger mLastFrameTimeMs;
     
-    NSUInteger mFromIndex;
-    NSUInteger mToIndex;
+    NSInteger mFromIndex;
+    NSInteger mToIndex;
     
     NSUInteger mLoopTimes;
+    NSUInteger mTotalLoopTimes;
     
     NSInteger mLastPlayIndex;
     NSTimeInterval mLastPlayTime;
     NSString *mPlayingAnimName;
+    
+    BOOL mIsInitOk;
 }
 
 //构造方法：flashName为flash文件名
@@ -76,6 +79,15 @@ typedef enum : NSUInteger {
 
 //私有初始化函数
 -(BOOL) innerInit{
+    isPlaying = NO;
+    mPlayingAnimName = nil;
+    mStartTimeMs = 0;
+    mFromIndex = 0;
+    mToIndex = 0;
+    mLoopTimes = 0;
+    mTotalLoopTimes = 0;
+    mLastPlayIndex = -1;
+    
     mFileManager = [NSFileManager defaultManager];
     mMainBundle = [NSBundle mainBundle];
     //document根目录
@@ -124,7 +136,58 @@ typedef enum : NSUInteger {
         }
     }
     
+    mIsInitOk = YES;
+    
+    [self setScaleMode:ScaleModeDefault andDesignResolution:CGSizeMake(640, 1136)];
+    
     return YES;
+}
+
+-(BOOL)isInitOk{
+    return mIsInitOk;
+}
+
+//获取配置
+-(FlashViewTool *)tool{
+    if (!_tool) {
+        _tool = [[FlashViewTool alloc] init];
+        _tool.baseView = self;
+    }
+    return _tool;
+}
+
+//是否启用隐式动画
+-(void) setUseImplicitAnim:(BOOL) isUseImplicitAnim{
+    self.tool.isUseImplicitAnim = isUseImplicitAnim;
+}
+
+//设置缩放类型
+-(void) setScaleMode:(ScaleMode)mode andDesignResolution:(CGSize)resolution{
+    UIScreen *mainScreen = [UIScreen mainScreen];
+    CGSize screenSize = mainScreen.bounds.size;
+    CGFloat wRate = screenSize.width / resolution.width;
+    CGFloat hRate = screenSize.height / resolution.height;
+    switch (mode) {
+        case ScaleModeWidthFit:
+            self.tool.scale = CGPointMake(wRate, wRate);
+            break;
+        case ScaleModeHeightFit:
+            self.tool.scale = CGPointMake(hRate, hRate);
+            break;
+        case ScaleModeRespective:
+        case ScaleModeDefault:
+            self.tool.scale = CGPointMake(wRate, hRate);
+            break;
+    }
+}
+
+//直接设置缩放比例数值
+-(void) setScaleWithX:(CGFloat)x y:(CGFloat) y isDesignResolutionEffect:(BOOL)isDREffect{
+    if (isDREffect) {
+        self.tool.scale = CGPointMake(self.tool.scale.x * x, self.tool.scale.y * y);
+    }else{
+        self.tool.scale = CGPointMake(x, y);
+    }
 }
 
 //以二进制方式读取文件数据
@@ -172,6 +235,12 @@ typedef enum : NSUInteger {
     return nil;
 }
 
+//获取动画名称
+-(NSArray *)animNames{
+    return mFlashViewNode.anims.allKeys;
+}
+
+//解析json文件
 -(BOOL) parseJsonFile{
     NSDictionary *jsonDict = [self readJson];
     if (!jsonDict) {
@@ -191,10 +260,7 @@ typedef enum : NSUInteger {
     
     //图片
     for (NSString *texName in jsonDict[@"textures"]) {
-        if (!mImageCache) {
-            mImageCache = [FlashViewImageCache cache];
-        }
-        [mImageCache addImage:[self readImage:texName] withName:texName];
+        [self.tool addImage:[self readImage:texName] withName:texName];
     }
     
     //读取动画
@@ -203,11 +269,13 @@ typedef enum : NSUInteger {
         animNode.animName = anim[@"animName"];
         animNode.frameCount = [anim[@"frameMaxNum"] integerValue];
         [mFlashViewNode addAnim:animNode];
-        for (int i = 0; i < [anim[@"layers"] length]; i++) {
-            NSDictionary *layer = anim[@"layers"][i];
+        NSArray *layers = anim[@"layers"];
+        for (int i = 0; i < layers.count; i++) {
+            NSDictionary *layer = layers[i];
             FlashViewLayerNode *layerNode = [[FlashViewLayerNode alloc] init];
-            layerNode.index = i;
-            [animNode addLayer:layerNode baseView:self];
+            layerNode.index = layers.count - i;
+            layerNode.tool = self.tool;
+            [animNode addLayer:layerNode];
             for (NSDictionary *keyFrame in layer[@"frames"]) {
                 FlashViewFrameNode *frameNode = [[FlashViewFrameNode alloc] init];
                 [layerNode addKeyFrame:frameNode];
@@ -233,10 +301,12 @@ typedef enum : NSUInteger {
             }
         }
     }
+    [mFlashViewNode onReady];
     
     return YES;
 }
 
+//解析二进制描述文件
 -(BOOL) parseBinFile{
     NSData *binData = [self readData];
     if (!binData) {
@@ -244,7 +314,7 @@ typedef enum : NSUInteger {
         return NO;
     }
     
-    FlashViewDataReaderNew *dataReader = [[FlashViewDataReaderNew alloc] init];
+    FlashViewDataReader *dataReader = [[FlashViewDataReader alloc] initWithNSData:binData];
     NSInteger frameRate = [dataReader readUShort];
     NSInteger oneFrameTime = 1000 / frameRate;
     
@@ -265,16 +335,13 @@ typedef enum : NSUInteger {
         default:
             break;
     }
-    [FlashViewImageCache cache].imagePath = imagePath;
+    self.tool.imagePath = imagePath;
     
     NSInteger imageCount = [dataReader readUShort];
     NSMutableArray *imageNames = [[NSMutableArray alloc] init];
     for (int i = 0; i < imageCount; i++) {
         NSString *texName = [dataReader readNSString];
-        if (!mImageCache) {
-            mImageCache = [FlashViewImageCache cache];
-        }
-        [mImageCache addImage:[self readImage:texName] withName:texName];
+        [self.tool addImage:[self readImage:texName] withName:texName];
         [imageNames addObject:texName];
     }
     
@@ -287,8 +354,9 @@ typedef enum : NSUInteger {
         NSInteger layerCount = [dataReader readUShort];
         for (int k = 0; k < layerCount; k++) {
             FlashViewLayerNode *layerNode = [[FlashViewLayerNode alloc] init];
-            layerNode.index = k;
-            [animNode addLayer:layerNode baseView:self];
+            layerNode.index = layerCount - k;
+            layerNode.tool = self.tool;
+            [animNode addLayer:layerNode];
             NSInteger keyFrameCount = [dataReader readUShort];
             for (int l = 0; l < keyFrameCount; l++) {
                 FlashViewFrameNode *frameNode = [[FlashViewFrameNode alloc] init];
@@ -316,31 +384,45 @@ typedef enum : NSUInteger {
             }
         }
     }
+    [mFlashViewNode onReady];
     return YES;
 }
 
+//播放某帧动画
 -(void)updateToFrameIndex:(NSInteger)frameIndex{
     if (!isPlaying) {
-        NSLog(@"updateToFrameIndex当前没有正在播放的动画");
         return;
     }
     FlashViewAnimNode *animNode = mFlashViewNode.anims[mPlayingAnimName];
     [animNode updateToIndex:frameIndex];
 }
 
+//动画内事件
 -(void)trigerEventWithIndex:(NSInteger)frameIndex{
     if (!isPlaying) {
-        NSLog(@"trigerEventWithIndex当前没有正在播放的动画");
         return;
     }
     FlashViewAnimNode *animNode = mFlashViewNode.anims[mPlayingAnimName];
-    [animNode trigerEventWithIndex:frameIndex];
+    [animNode trigerEventWithIndex:frameIndex delegate:self];
 }
 
--(NSInteger) currentTimeMs{
-    return [NSDate date].timeIntervalSince1970;
+//触发事件
+-(void)onEvent:(FlashViewEvent)evt data:(id)d{
+    if (self.onEventBlock) {
+        self.onEventBlock(evt, d);
+    }else{
+        if (self.delegate) {
+            [self.delegate onEvent:evt data:d];
+        }
+    }
 }
 
+//当前时间：毫秒
+-(NSUInteger) currentTimeMs{
+    return [NSDate date].timeIntervalSince1970 * 1000;
+}
+
+//当前播放的动画数据
 -(FlashViewAnimNode *) currAnimNode{
     if (isPlaying) {
         return mFlashViewNode.anims[mPlayingAnimName];
@@ -350,7 +432,7 @@ typedef enum : NSUInteger {
 
 //触发事件
 -(void) triggerEventWithCurrTime:(NSTimeInterval) currTime{
-    if (!isPlaying || mLastPlayIndex < 0) {
+    if (!isPlaying || mLastPlayIndex <= 0) {
         return;
     }
     
@@ -375,20 +457,35 @@ typedef enum : NSUInteger {
     //播放
     if (currIndex != mLastPlayIndex) {
         [self updateToFrameIndex:currIndex];
+        [self onEvent:FlashViewEventFrame data:@(currIndex)];
     }
     
     //触发事件
     [self triggerEventWithCurrTime:currTime];
     
+    //判断结束事件
+    FlashViewAnimNode *animNode = mFlashViewNode.anims[mPlayingAnimName];
+    if (mTotalLoopTimes != 0) {
+        if (currIndex + 1 >= animNode.frameCount || currIndex < mLastPlayIndex) {
+            mLoopTimes++;
+            [self onEvent:FlashViewEventOneLoopEnd data:@(mLoopTimes)];
+            if (mLoopTimes >= mTotalLoopTimes) {
+                [self stop];
+                return;
+            }
+        }
+    }
+    
     //重置状态
     mLastPlayIndex = currIndex;
     //向前对齐
     if (passedCount != (NSUInteger) passedCount) {
-        currTime = ceil(passedCount) * mFlashViewNode.oneFrameDurationMs;
+        currTime = ceil(passedCount) * mFlashViewNode.oneFrameDurationMs + mStartTimeMs;
     }
     mLastPlayTime = currTime;
 }
 
+//计时器
 -(CADisplayLink *)displayLink{
     if (!mDisplayLink) {
         mDisplayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(updateAnim:)];
@@ -396,27 +493,95 @@ typedef enum : NSUInteger {
     return mDisplayLink;
 }
 
--(void) playAnimWithName:(NSString *) animName fromIndex:(NSUInteger) fromIndex toIndex:(NSUInteger) toIndex loopTimes:(NSUInteger) loopTimes{
-    if (isPlaying) {
-        [self stopAnim];
-    }
-    mFromIndex = fromIndex;
-    mToIndex = toIndex;
-    mLoopTimes = loopTimes;
-    [self.displayLink addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
-    mStartTimeMs = self.currentTimeMs;
+//播放动画
+-(void)play:(NSString *)animName loopTimes:(NSUInteger)times{
+    [self play:animName loopTimes:times fromIndex:0];
 }
 
--(void) stopAnim{
+//播放动画
+-(void)play:(NSString *)animName loopTimes:(NSUInteger)times fromIndex:(NSInteger)from{
+    [self play:animName loopTimes:times fromIndex:from toIndex:-1];
+}
+
+//播放动画
+-(void) play:(NSString *) animName loopTimes:(NSUInteger) loopTimes fromIndex:(NSInteger) fromIndex toIndex:(NSInteger) toIndex{
+    if (isPlaying) {
+        [self stop];
+    }
+    isPlaying = YES;
+    mPlayingAnimName = animName;
+    NSInteger maxIndex = mFlashViewNode.anims[mPlayingAnimName].frameCount;
+    mFromIndex = fromIndex;
+    if (mFromIndex < 0 || mFromIndex >= maxIndex) {
+        mFromIndex = 0;
+    }
+    mToIndex = toIndex;
+    if (mToIndex < 0 || mToIndex >= maxIndex) {
+        mToIndex = maxIndex - 1;
+    }
+    mTotalLoopTimes = loopTimes;
+    mLoopTimes = 0;
+    [self.displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+    mStartTimeMs = self.currentTimeMs;
+    
+    [self onEvent:FlashViewEventStart data:nil];
+}
+
+//设置循环次数
+-(void) setLoopTimes:(NSInteger) times{
+    if (isPlaying) {
+        mTotalLoopTimes = times;
+    }
+}
+
+//像图片一样显示动画的某一帧内容
+-(void)stopAtFrameIndex:(NSInteger)frameIndex animName:(NSString *)animName{
+    FlashViewAnimNode *animNode = mFlashViewNode.anims[animName];
+    if (animNode && frameIndex >= 0 && frameIndex < animNode.frameCount) {
+        [animNode updateToIndex:frameIndex];
+    }
+}
+//暂停
+-(void) pause{
+    isPlaying = NO;
+}
+
+//恢复播放
+-(void) resume{
+    isPlaying = YES;
+}
+
+//停止动画
+-(void) stop{
     isPlaying = NO;
     mPlayingAnimName = nil;
     mStartTimeMs = 0;
     mFromIndex = 0;
     mToIndex = 0;
     mLoopTimes = 0;
+    mTotalLoopTimes = 0;
     mLastPlayIndex = -1;
     [self.displayLink invalidate];
+    mDisplayLink = nil;
+    [self onEvent:FlashViewEventStop data:nil];
 }
 
+//替换某一个动画元件的图片
+-(void) replaceImage:(NSString *)texName image:(UIImage *)image{
+    [self.tool replaceImage:image withName:texName];
+}
+
+//重新加载一个新的动画文件
+-(BOOL) reload:(NSString *)flashName andAnimDir:(NSString *)animDir{
+    [self stop];
+    mFlashViewNode = nil;
+    self.tool = nil;
+    mFlashName = flashName;
+    mFlashAnimDir = animDir;
+    if (![self innerInit]) {
+        return NO;
+    }
+    return YES;
+}
 
 @end

@@ -1,5 +1,5 @@
 //
-//  FlashViewDataReaderNew.h
+//  FlashViewDataReader.h
 //  FlashView
 //
 //  Created by kaso on 19/10/16.
@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-@interface FlashViewDataReaderNew : NSObject
+@interface FlashViewDataReader : NSObject
 
 - (instancetype)initWithNSData:(NSData *)data;
 

@@ -15,6 +15,7 @@
 
 @interface ViewController ()
 @property (nonatomic, weak) UIButton *testFlashViewBtn;
+@property (nonatomic, weak) UIButton *testFlashViewNewBtn;
 @property (nonatomic, weak) UIButton *testFlashViewDownloadBtn;
 @end
 
@@ -23,6 +24,13 @@
 -(UIButton *)testFlashViewBtn{
     if (!_testFlashViewBtn) {
         _testFlashViewBtn = [self createTestBtnWithTitle:@"测试FlashView" y:self.view.center.y - 35];
+    }
+    return _testFlashViewBtn;
+}
+
+-(UIButton *)testFlashViewNewBtn{
+    if (!_testFlashViewNewBtn) {
+        _testFlashViewNewBtn = [self createTestBtnWithTitle:@"测试新FlashView" y:self.view.center.y - 105];
     }
     return _testFlashViewBtn;
 }
@@ -48,8 +56,20 @@
 
 -(void) onClickTest:(UIButton *) btn{
     if ([btn isEqual:self.testFlashViewBtn]) {
-        [self.navigationController pushViewController:[[TestFlashViewController alloc] init] animated:YES];
-    }else{
+        __weak UIViewController *weakSelf = self;
+        TestFlashViewController *testViewCtl = [[TestFlashViewController alloc] init];
+        testViewCtl.isNewFlashAnim = NO;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [weakSelf presentViewController:testViewCtl animated:YES completion:nil];
+        });
+    } else if([btn isEqual:self.testFlashViewNewBtn]){
+        __weak UIViewController *weakSelf = self;
+        TestFlashViewController *testViewCtl = [[TestFlashViewController alloc] init];
+        testViewCtl.isNewFlashAnim = YES;
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [weakSelf presentViewController:testViewCtl animated:YES completion:nil];
+        });
+    } else{
         [self.navigationController pushViewController:[[TestFlashViewDownloadViewController alloc] init] animated:YES];
     }
 }
