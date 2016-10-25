@@ -9,7 +9,7 @@
 #import "TestFlashViewDownloadViewController.h"
 #import "FlashViewDownloader.h"
 #import "ZipArchive.h"
-#import "FlashView.h"
+#import "FlashViewNew.h"
 
 /**
  *  测试FlashView下载
@@ -44,9 +44,12 @@
         //do nothing
     } completeCb:^(BOOL succ) {
         if (succ) {
-            FlashView *flashView = [[FlashView alloc] initWithFlashName:@"heiniao"];
+            FlashViewNew *flashView = [[FlashViewNew alloc] initWithFlashName:@"heiniao"];
             [self.view addSubview:flashView];
-            [flashView play:flashView.animNames[0] loopTimes:FlashLoopTimeForever];
+            [flashView play:flashView.animNames[0] loopTimes:FlashLoopTimeOnce];
+            flashView.onEventBlock = ^(FlashViewEvent evt, id data){
+                
+            };
             NSLog(@"动画下载成功并播放");
         }else{
             NSLog(@"下载动画后播放失败");

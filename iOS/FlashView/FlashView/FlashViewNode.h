@@ -8,10 +8,15 @@
 #import "FlashViewCommon.h"
 #import "FlashViewTool.h"
 
+//数据基类
 @interface FlashViewBaseNode: NSObject
+//刷新到第几帧
 -(void) updateToIndex:(NSInteger) index;
+//触发回调事件
 -(void) trigerEventWithIndex:(NSInteger)index delegate:(id<FlashViewDelegate>)delegate;
+//数据初始化完成
 -(void) onReady;
+//清空数据
 -(void) onClean;
 @end
 
@@ -42,13 +47,13 @@
 //透明度
 @property (nonatomic, unsafe_unretained) float alpha;
 //颜色叠加
-@property (nonatomic, unsafe_unretained) char r;
-@property (nonatomic, unsafe_unretained) char g;
-@property (nonatomic, unsafe_unretained) char b;
-@property (nonatomic, unsafe_unretained) char a;
+@property (nonatomic, unsafe_unretained) unsigned char r;
+@property (nonatomic, unsafe_unretained) unsigned char g;
+@property (nonatomic, unsafe_unretained) unsigned char b;
+@property (nonatomic, unsafe_unretained) unsigned char a;
 @end
 
-//层数据
+//层数据：绘制工作和主要逻辑都在这里
 @interface FlashViewLayerNode : FlashViewBaseNode
 //配置
 @property (nonatomic, weak) FlashViewTool *tool;

@@ -39,33 +39,4 @@
     return image;
 }
 
-+(UIImage *)imageWithColor:(UIColor *)color size:(CGSize)size{
-    CGRect rect=CGRectMake(0, 0, size.width, size.height);
-    UIGraphicsBeginImageContext(rect.size);
-    CGContextRef context=UIGraphicsGetCurrentContext();
-    CGContextSetFillColorWithColor(context, color.CGColor);
-    CGContextFillRect(context, rect);
-    UIImage *img=UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    
-    return img;
-}
-
--(UIImage *)colorOverlayImageWithColor:(UIColor *) color srcImgName:(NSString *)srcImgName{
-    CIFilter *blendFilter = [CIFilter filterWithName:@"CISourceAtopCompositing"];
-    [blendFilter setDefaults];
-    
-    UIImage *srcImg = [self imageWithName:srcImgName];
-    UIImage *colorOverlayImage = [self.class imageWithColor:color size:srcImg.size];
-    
-    [blendFilter setValue:[CIImage imageWithCGImage:colorOverlayImage.CGImage] forKey:kCIInputImageKey];
-    [blendFilter setValue:[CIImage imageWithCGImage:srcImg.CGImage]forKey:kCIInputBackgroundImageKey];
-    
-    CIImage *filterOutputImg = blendFilter.outputImage;
-    CIContext *ciContext = [CIContext contextWithOptions:nil];
-    CGImageRef cgImg = [ciContext createCGImage:filterOutputImg fromRect:filterOutputImg.extent];
-    
-    return [UIImage imageWithCGImage:cgImg];
-}
-
 @end

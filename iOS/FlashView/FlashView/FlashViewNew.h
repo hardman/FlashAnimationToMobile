@@ -32,13 +32,13 @@
 -(NSArray *)animNames;
 
 //播放动画，animName即为flash中anims文件夹内的动画名称
--(void) play:(NSString *)animName loopTimes:(NSUInteger) times;
+-(void) play:(NSString *)animName loopTimes:(NSInteger) times;
 
 //播放动画，animName即为flash中anims文件夹内的动画名称，fromIndex为起始帧
--(void) play:(NSString *)animName loopTimes:(NSUInteger)times fromIndex:(NSInteger) from;
+-(void) play:(NSString *)animName loopTimes:(NSInteger)times fromIndex:(NSInteger) from;
 
 //播放动画，animName即为flash中anims文件夹内的动画名称，fromIndex为起始帧，toIndex为结束帧
--(void) play:(NSString *)animName loopTimes:(NSUInteger)times fromIndex:(NSInteger) from toIndex:(NSInteger) to;
+-(void) play:(NSString *)animName loopTimes:(NSInteger)times fromIndex:(NSInteger) from toIndex:(NSInteger) to;
 
 //像图片一样显示动画的某一帧内容
 -(void) stopAtFrameIndex:(NSInteger) frameIndex animName:(NSString *) animName;

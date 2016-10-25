@@ -25,33 +25,41 @@
     // Do any additional setup after loading the view.
     self.view.backgroundColor = [UIColor whiteColor];
     
-    [self testFlashViewNew];
-    //    [self testFlashView];
+    if (self.isNewFlashAnim) {
+        [self testFlashViewNew];
+    }else{
+        [self testFlashView];
+    }
 }
 
 -(void) testFlashViewNew{
-    FlashViewNew *flashViewNew = [[FlashViewNew alloc] initWithFlashName:@"bieshu"];
+    FlashViewNew *flashViewNew = [[FlashViewNew alloc] initWithFlashName:@"laba"];
     flashViewNew.frame = self.view.frame;
     [self.view addSubview:flashViewNew];
     [flashViewNew play:flashViewNew.animNames.firstObject loopTimes:FlashLoopTimeForever];
     
-    [self performSelector:@selector(loadCar:) withObject:flashViewNew afterDelay:3];
+    [self performSelector:@selector(loadCar:) withObject:flashViewNew afterDelay:10];
 }
 
 -(void) testFlashView{
-    FlashView *flashView = [[FlashView alloc] initWithFlashName:@"bieshu"];
+    FlashView *flashView = [[FlashView alloc] initWithFlashName:@"laba"];
     flashView.frame = self.view.frame;// CGRectMake(100, 100, 200, 500);
     flashView.backgroundColor = [UIColor clearColor];
     [self.view addSubview:flashView];
     [flashView play:flashView.animNames.firstObject  loopTimes:FlashLoopTimeForever];
     
-    [self performSelector:@selector(loadCar:) withObject:flashView afterDelay:3];
+    [self performSelector:@selector(loadCar:) withObject:flashView afterDelay:10];
 }
 
 -(void) reload:(id)flashView{
     [flashView reload:@"heiniao" andAnimDir:nil];
     [flashView play:@"atk" loopTimes:FlashLoopTimeForever];
     [self performSelector:@selector(loadCar:) withObject:flashView afterDelay:3];
+    [flashView setOnEventBlock:^(FlashViewEvent evt, id data){
+        if (evt == FlashViewEventMark) {
+            NSLog(@"触发事件 %u, data=%@", evt, data);
+        }
+    }];
 }
 
 -(void) loadCar:(id)flashView{

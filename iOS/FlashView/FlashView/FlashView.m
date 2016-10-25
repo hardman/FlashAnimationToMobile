@@ -7,20 +7,6 @@
 #import "FlashView.h"
 #import "FlashViewDataReader.h"
 
-//表示文件是在Resource里还是在Document里
-typedef enum : NSUInteger {
-    RESOURCE,
-    DOCUMENT,
-    NONE,
-} FileType;
-
-//表示动画描述文件是json还是二进制
-typedef enum : NSUInteger {
-    JSON,
-    BIN,
-    NOTYPE,
-} FileDataType;
-
 //自定义颜色叠加类型
 typedef struct FlashColor{
     float r;
@@ -49,9 +35,9 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
     NSString *mWritablePath;
     
     //文件在Document里还是在Resource里
-    FileType mFileType;
+    FlashFileType mFileType;
     //动画是json还是二进制
-    FileDataType mFileDataType;
+    FlashFileDataType mFileDataType;
     
     //动画描述文件json数据
     NSDictionary *mJson;
@@ -158,7 +144,7 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
     mMainBundle = [NSBundle mainBundle];
     //document根目录
     mWritablePath = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-    mFileType = NONE;
+    mFileType = FlashFileTypeNone;
     mSetLoopTimes = 1;
     mLoopTimes = 0;
     
@@ -181,31 +167,31 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
         if (!filePath) {
             filePath = [NSString stringWithFormat:@"%@/%@/%@.flajson", mWritablePath, mFlashAnimDir, mFlashName];
             if ([mFileManager fileExistsAtPath:filePath]) {
-                mFileType = DOCUMENT;
-                mFileDataType = JSON;
+                mFileType = FlashFileTypeDocument;
+                mFileDataType = FlashFileDataTypeJson;
             }else{
                 filePath = [NSString stringWithFormat:@"%@/%@/%@.flabin", mWritablePath, mFlashAnimDir, mFlashName];
                 if ([mFileManager fileExistsAtPath:filePath]) {
-                    mFileType = DOCUMENT;
-                    mFileDataType = BIN;
+                    mFileType = FlashFileTypeDocument;
+                    mFileDataType = FlashFileDataTypeBin;
                 }
             }
         }else{
-            mFileType = RESOURCE;
-            mFileDataType = BIN;
+            mFileType = FlashFileTypeResource;
+            mFileDataType = FlashFileDataTypeBin;
         }
     }else{
-        mFileType = RESOURCE;
-        mFileDataType = JSON;
+        mFileType = FlashFileTypeResource;
+        mFileDataType = FlashFileDataTypeJson;
     }
     
-    if (mFileType == NONE) {
+    if (mFileType == FlashFileTypeNone) {
         NSLog(@"FlashView init error file %@.flajson/.flabin is not exist", mFlashName);
         return NO;
     }
     
     //读取并解析数据
-    if (mFileDataType == JSON) {
+    if (mFileDataType == FlashFileDataTypeJson) {
         mJson = [self readJson];
         
         if (!mJson) {
@@ -381,8 +367,8 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
     [self stop];
     mFlashName = nil;
     mFlashAnimDir = nil;
-    mFileDataType = NOTYPE;
-    mFileType = NONE;
+    mFileDataType = FlashFileDataTypeNone;
+    mFileType = FlashFileTypeNone;
     mJson = nil;
     mData = nil;
     mRunningAnimName = nil;
@@ -451,9 +437,9 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
 //根据flash数据文件中得到的图片名字，读取真正的图片。
 -(UIImage *)readImage:(NSString *)path{
     switch (mFileType) {
-        case DOCUMENT:
+        case FlashFileTypeDocument:
             return [UIImage imageWithContentsOfFile:[NSString stringWithFormat:@"%@/%@/%@/%@", mWritablePath, mFlashAnimDir, mFlashName, path]];
-        case RESOURCE:
+        case FlashFileTypeResource:
             return [UIImage imageWithContentsOfFile:[mMainBundle pathForResource:path ofType:nil]];
         default:
             break;
@@ -465,11 +451,11 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
 -(NSData *)readData{
     NSData *data = nil;
     switch (mFileType) {
-        case DOCUMENT:
-            data = [NSData dataWithContentsOfFile:[NSString stringWithFormat:@"%@/%@/%@%@", mWritablePath, mFlashAnimDir, mFlashName, mFileDataType == JSON ? @".flajson" : @".flabin"]];
+        case FlashFileTypeDocument:
+            data = [NSData dataWithContentsOfFile:[NSString stringWithFormat:@"%@/%@/%@%@", mWritablePath, mFlashAnimDir, mFlashName, mFileDataType == FlashFileDataTypeJson ? @".flajson" : @".flabin"]];
             break;
-        case RESOURCE:
-            data = [NSData dataWithContentsOfFile:[mMainBundle pathForResource:[NSString stringWithFormat:@"%@%@", mFlashName, mFileDataType == JSON ? @".flajson" : @".flabin"] ofType:nil]];
+        case FlashFileTypeResource:
+            data = [NSData dataWithContentsOfFile:[mMainBundle pathForResource:[NSString stringWithFormat:@"%@%@", mFlashName, mFileDataType == FlashFileDataTypeJson ? @".flajson" : @".flabin"] ofType:nil]];
             break;
         default:
             break;
@@ -548,6 +534,7 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
     }
     float x = [[oneFrame objectForKey:@"x"] floatValue];
     float y = [[oneFrame objectForKey:@"y"] floatValue];
+    float alpha = [oneFrame[@"alpha"] floatValue];
     NSDictionary *color = [oneFrame objectForKey:@"color"];
     [arr addObject:@{
                      @"texName": [oneFrame objectForKey:@"texName"],
@@ -558,7 +545,7 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
                      @"skewX": [oneFrame objectForKey:@"skewX"],
                      @"skewY": [oneFrame objectForKey:@"skewY"],
                      @"mark":[oneFrame objectForKey:@"mark"],
-                     @"alpha": [oneFrame objectForKey:@"alpha"],
+                     @"alpha": @(alpha),
                      @"r": [color objectForKey:@"r"],
                      @"g": [color objectForKey:@"g"],
                      @"b": [color objectForKey:@"b"],
@@ -857,10 +844,10 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
         NSInteger animLen = mToIndex - mFromIndex;
         if (frameIndex == animLen - 1 || mLastFrameIndex > frameIndex) {
             if (self.delegate) {
-                [self.delegate onEvent:FlashViewEventOneLoopEnd data:nil];
+                [self.delegate onEvent:FlashViewEventOneLoopEnd data:@(mLoopTimes)];
             }
             if (self.onEventBlock) {
-                [self performSelectorOnMainThread:@selector(onEventOnMainThread:) withObject:@{@"event": @(FlashViewEventOneLoopEnd)} waitUntilDone:NO];
+                [self performSelectorOnMainThread:@selector(onEventOnMainThread:) withObject:@{@"event": @(FlashViewEventOneLoopEnd), @"data":@(mLoopTimes)} waitUntilDone:NO];
             }
             if (mSetLoopTimes >= FlashLoopTimeOnce) {
                 if (++mLoopTimes >= mSetLoopTimes) {

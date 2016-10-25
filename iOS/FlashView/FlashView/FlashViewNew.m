@@ -8,19 +8,6 @@
 #import "FlashViewTool.h"
 #import "FlashViewNode.h"
 #import "FlashViewDataReader.h"
-//表示文件是在Resource里还是在Document里
-typedef enum : NSUInteger {
-    FileTypeNone,
-    FileTypeResource,
-    FileTypeDocument,
-} FlashFileType;
-
-//表示动画描述文件是json还是二进制
-typedef enum : NSUInteger {
-    FileDataTypeNone,
-    FileDataTypeJson,
-    FileDataTypeBin,
-} FlashFileDataType;
 
 @interface FlashViewNew()<FlashViewDelegate>
 @property (nonatomic, strong) FlashViewTool *tool;
@@ -48,8 +35,8 @@ typedef enum : NSUInteger {
     NSInteger mFromIndex;
     NSInteger mToIndex;
     
-    NSUInteger mLoopTimes;
-    NSUInteger mTotalLoopTimes;
+    NSInteger mLoopTimes;
+    NSInteger mTotalLoopTimes;
     
     NSInteger mLastPlayIndex;
     NSTimeInterval mLastPlayTime;
@@ -98,31 +85,31 @@ typedef enum : NSUInteger {
         if (!filePath) {
             filePath = [NSString stringWithFormat:@"%@/%@/%@.flajson", mWritablePath, mFlashAnimDir, mFlashName];
             if ([mFileManager fileExistsAtPath:filePath]) {
-                mFileType = FileTypeDocument;
-                mFileDataType = FileDataTypeJson;
+                mFileType = FlashFileTypeDocument;
+                mFileDataType = FlashFileDataTypeJson;
             }else{
                 filePath = [NSString stringWithFormat:@"%@/%@/%@.flabin", mWritablePath, mFlashAnimDir, mFlashName];
                 if ([mFileManager fileExistsAtPath:filePath]) {
-                    mFileType = FileTypeDocument;
-                    mFileDataType = FileDataTypeBin;
+                    mFileType = FlashFileTypeDocument;
+                    mFileDataType = FlashFileDataTypeBin;
                 }
             }
         }else{
-            mFileType = FileTypeResource;
-            mFileDataType = FileDataTypeBin;
+            mFileType = FlashFileTypeResource;
+            mFileDataType = FlashFileDataTypeBin;
         }
     }else{
-        mFileType = FileTypeResource;
-        mFileDataType = FileDataTypeJson;
+        mFileType = FlashFileTypeResource;
+        mFileDataType = FlashFileDataTypeJson;
     }
     
-    if (mFileType == FileTypeNone) {
+    if (mFileType == FlashFileTypeNone) {
         NSLog(@"FlashView init error file %@.flajson/.flabin is not exist", mFlashName);
         return NO;
     }
     
     //读取并解析数据
-    if (mFileDataType == FileDataTypeJson) {
+    if (mFileDataType == FlashFileDataTypeJson) {
         if (![self parseJsonFile]) {
             NSLog(@"FlashView init error file %@.flajson is not json format", mFlashName);
             return NO;
@@ -137,6 +124,9 @@ typedef enum : NSUInteger {
     mIsInitOk = YES;
     
     [self setScaleMode:ScaleModeDefault andDesignResolution:CGSizeMake(640, 1136)];
+    
+    CGSize screenSize = [UIScreen mainScreen].bounds.size;
+    self.frame = CGRectMake(0, 0, screenSize.width, screenSize.height);
     
     return YES;
 }
@@ -192,11 +182,11 @@ typedef enum : NSUInteger {
 -(NSData *)readData{
     NSData *data = nil;
     switch (mFileType) {
-        case FileTypeDocument:
-            data = [NSData dataWithContentsOfFile:[NSString stringWithFormat:@"%@/%@/%@%@", mWritablePath, mFlashAnimDir, mFlashName, mFileDataType == FileDataTypeJson ? @".flajson" : @".flabin"]];
+        case FlashFileTypeDocument:
+            data = [NSData dataWithContentsOfFile:[NSString stringWithFormat:@"%@/%@/%@%@", mWritablePath, mFlashAnimDir, mFlashName, mFileDataType == FlashFileDataTypeJson ? @".flajson" : @".flabin"]];
             break;
-        case FileTypeResource:
-            data = [NSData dataWithContentsOfFile:[mMainBundle pathForResource:[NSString stringWithFormat:@"%@%@", mFlashName, mFileDataType == FileDataTypeJson ? @".flajson" : @".flabin"] ofType:nil]];
+        case FlashFileTypeResource:
+            data = [NSData dataWithContentsOfFile:[mMainBundle pathForResource:[NSString stringWithFormat:@"%@%@", mFlashName, mFileDataType == FlashFileDataTypeJson ? @".flajson" : @".flabin"] ofType:nil]];
             break;
         default:
             break;
@@ -223,9 +213,9 @@ typedef enum : NSUInteger {
 //根据flash数据文件中得到的图片名字，读取真正的图片。
 -(UIImage *)readImage:(NSString *)path{
     switch (mFileType) {
-        case FileTypeDocument:
+        case FlashFileTypeDocument:
             return [UIImage imageWithContentsOfFile:[NSString stringWithFormat:@"%@/%@/%@/%@", mWritablePath, mFlashAnimDir, mFlashName, path]];
-        case FileTypeResource:
+        case FlashFileTypeResource:
             return [UIImage imageWithContentsOfFile:[mMainBundle pathForResource:path ofType:nil]];
         default:
             break;
@@ -324,10 +314,10 @@ typedef enum : NSUInteger {
     
     NSString *imagePath = nil;
     switch (mFileType) {
-        case FileTypeDocument:
+        case FlashFileTypeDocument:
             imagePath = [NSString stringWithFormat:@"%@/%@/%@", mWritablePath, mFlashAnimDir, mFlashName];
             break;
-        case FileTypeResource:
+        case FlashFileTypeResource:
             imagePath = [mMainBundle bundlePath];
             break;
         default:
@@ -416,7 +406,7 @@ typedef enum : NSUInteger {
 }
 
 //当前时间：毫秒
--(NSUInteger) currentTimeMs{
+-(NSInteger) currentTimeMs{
     return [NSDate date].timeIntervalSince1970 * 1000;
 }
 
@@ -434,8 +424,8 @@ typedef enum : NSUInteger {
         return;
     }
     
-    //从上次update之后，过了几帧，每一帧都要检查是否有事件
-    NSInteger passedFrames = floor((currTime - mLastPlayTime) / mFlashViewNode.oneFrameDurationMs);
+    //从上次updateAnim:之后，过了几帧，每一帧都要检查是否有事件，算当前的帧，如果上一帧是5，当前帧是6，则passedFrames 为1.
+    NSInteger passedFrames = floor((currTime - mLastPlayTime) / mFlashViewNode.oneFrameDurationMs) + 1;
     for (NSInteger i = 0; i < passedFrames; i++) {
         NSInteger frameIndex = mLastPlayIndex + 1 + i;
         if (frameIndex > mToIndex) {
@@ -445,12 +435,13 @@ typedef enum : NSUInteger {
     }
 }
 
+//计时调用函数
 -(void) updateAnim:(CADisplayLink *)displayLink{
     NSTimeInterval currTime = self.currentTimeMs;
     NSTimeInterval passedTime = currTime - mStartTimeMs;
     NSTimeInterval passedCount = passedTime / mFlashViewNode.oneFrameDurationMs;
-    NSUInteger animLen = mToIndex - mFromIndex + 1;
-    NSUInteger currIndex = (NSUInteger)passedCount % animLen;
+    NSInteger animLen = mToIndex - mFromIndex + 1;
+    NSInteger currIndex = (NSInteger)passedCount % animLen;
     
     //播放
     if (currIndex != mLastPlayIndex) {
@@ -477,7 +468,7 @@ typedef enum : NSUInteger {
     //重置状态
     mLastPlayIndex = currIndex;
     //向前对齐
-    if (passedCount != (NSUInteger) passedCount) {
+    if (passedCount != (NSInteger) passedCount) {
         currTime = ceil(passedCount) * mFlashViewNode.oneFrameDurationMs + mStartTimeMs;
     }
     mLastPlayTime = currTime;
@@ -492,17 +483,17 @@ typedef enum : NSUInteger {
 }
 
 //播放动画
--(void)play:(NSString *)animName loopTimes:(NSUInteger)times{
+-(void)play:(NSString *)animName loopTimes:(NSInteger)times{
     [self play:animName loopTimes:times fromIndex:0];
 }
 
 //播放动画
--(void)play:(NSString *)animName loopTimes:(NSUInteger)times fromIndex:(NSInteger)from{
+-(void)play:(NSString *)animName loopTimes:(NSInteger)times fromIndex:(NSInteger)from{
     [self play:animName loopTimes:times fromIndex:from toIndex:-1];
 }
 
 //播放动画
--(void) play:(NSString *) animName loopTimes:(NSUInteger) loopTimes fromIndex:(NSInteger) fromIndex toIndex:(NSInteger) toIndex{
+-(void) play:(NSString *) animName loopTimes:(NSInteger) loopTimes fromIndex:(NSInteger) fromIndex toIndex:(NSInteger) toIndex{
     if (isPlaying) {
         [self stop];
     }

@@ -11,10 +11,10 @@
 //baseview
 @property (nonatomic, weak) UIView *baseView;
 
-//当前动画路径
+//当前动画、图片的目录
 @property (nonatomic, copy) NSString *imagePath;
 
-//缩放
+//根据适配规则，计算出的缩放比例
 @property (nonatomic, unsafe_unretained) CGPoint scale;
 
 //是否开启隐式动画，默认关闭，如果打开，动画效果会比较丝滑，但是某些动画会变样，请根据具体情况使用。
@@ -28,11 +28,5 @@
 
 //获取图片
 -(UIImage *) imageWithName:(NSString *) name;
-
-//获取颜色叠加后的图片
--(UIImage *)colorOverlayImageWithColor:(UIColor *) color srcImgName:(NSString *)srcImgName;
-
-//图片
-+(UIImage *)imageWithColor:(UIColor *)color size:(CGSize)size;
 
 @end

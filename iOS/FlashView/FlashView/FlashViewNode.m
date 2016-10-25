@@ -17,6 +17,7 @@
     [self onClean];
 }
 @end
+
 //帧数据
 @implementation FlashViewFrameNode
 @end
@@ -25,19 +26,24 @@
 @interface FlashViewLayerNode()
 @property (nonatomic, strong) CALayer *layer;
 @property (nonatomic, strong) CALayer *colorLayer;
+@property (nonatomic, strong) CALayer *maskLayer;
 @property (nonatomic, strong) NSMutableArray<FlashViewFrameNode *> *keyFrames;
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, FlashViewFrameNode *> *frameDict;
 @end
 
 @implementation FlashViewLayerNode
 
+//计算出每一帧的数据(位置，大小等信息)
 -(void) onReady{
     [self createFrameDict];
 }
 
+//移除所有layer和数据
 -(void) onClean{
     [_layer removeFromSuperlayer];
     _layer = nil;
+    [_colorLayer removeFromSuperlayer];
+    _colorLayer = nil;
     _keyFrames = nil;
     _frameDict = nil;
     _imageName = nil;
@@ -58,6 +64,7 @@
     return _layer;
 }
 
+//颜色叠加层
 -(CALayer *)colorLayer{
     if (!_colorLayer) {
         _colorLayer = [[CALayer alloc] init];
@@ -65,6 +72,21 @@
     return _colorLayer;
 }
 
+//模板层
+-(CALayer *)maskLayer{
+    if (!_maskLayer) {
+        _maskLayer = [[CALayer alloc] init];
+    }
+    return _maskLayer;
+}
+
+/**
+ * 获取线性插值
+ * 其中旋转（skewX，skewY）同其他值有所不通。
+ * flash中的逻辑是，这两个值一定在[-180, 180]之间，前后两个值相减的绝对值不能超过180才可以使用正常的线性插值，超过180的则需要将线性插值分为2部分：
+ *   一是，先让oldValue同-180（或180，根据不通情况选择，见代码）进行插值
+ *   二是，让-180（或180，根据不通情况选择，见代码）同newValue进行插值
+ **/
 -(NSNumber *)getPerValue: (FlashViewFrameNode *)new old:(FlashViewFrameNode*)old key:(NSString *)key per:(float) per{
     float oldValue = [[old valueForKey:key] floatValue];
     float newValue = [[new valueForKey:key] floatValue];
@@ -89,6 +111,7 @@
     return @(ret);
 }
 
+//为每一帧计算数据
 -(void) createFrameDict{
     if (self.frameDict.count > 0) {
         return;
@@ -130,9 +153,11 @@
 //角度转弧度
 #define ANGLE_TO_RADIUS(angle) (0.01745329252f * (angle))
 
+//根据数据更新图片的各种信息
 -(void) updateLayerViewWithFrameNode:(FlashViewFrameNode *)frameNode{
     if (!frameNode || frameNode.isEmpty) {
-        [self.layer removeFromSuperlayer];
+        [_layer removeFromSuperlayer];
+        [_colorLayer removeFromSuperlayer];
         return;
     }
     
@@ -147,6 +172,7 @@
         [CATransaction setDisableActions:YES];
     }
     
+    //设置图片
     if (!self.imageName || ![frameNode.imageName isEqualToString:self.imageName]) {
         UIImage *image = [self.tool imageWithName:frameNode.imageName];
         layer.contents = (__bridge id _Nullable)(image.CGImage);
@@ -192,6 +218,26 @@
     //透明度
     layer.opacity = frameNode.alpha / 255;
     
+    //颜色叠加
+    if (frameNode.a != 0 && layer.opacity) {
+        if (!self.colorLayer.superlayer) {
+            [self.tool.baseView.layer addSublayer:self.colorLayer];
+        }
+        if (!self.colorLayer.mask) {
+            self.colorLayer.mask = self.maskLayer;
+        }
+        
+        self.maskLayer.contents = layer.contents;
+        self.maskLayer.frame = self.colorLayer.bounds;
+        
+        self.colorLayer.backgroundColor = [UIColor colorWithRed:frameNode.r / 255.0 green:frameNode.g / 255.0 blue:frameNode.b / 255.0 alpha:frameNode.a / 255.0].CGColor;
+        self.colorLayer.bounds = layer.bounds;
+        self.colorLayer.position = layer.position;
+        self.colorLayer.transform = layer.transform;
+    }else{
+        [self.colorLayer removeFromSuperlayer];
+    }
+    
     if (!self.tool.isUseImplicitAnim) {
         //关闭隐式动画
         [CATransaction commit];
@@ -204,11 +250,18 @@
 
 -(void)trigerEventWithIndex:(NSInteger)index delegate:(id<FlashViewDelegate>)delegate{
     FlashViewFrameNode *frameNode = self.frameDict[@(index)];
-    if (frameNode.mark && frameNode.mark) {
-        [delegate onEvent:FlashViewEventMark data:frameNode.mark];
+    if (frameNode.mark && frameNode.mark.length > 0) {
+        [delegate onEvent:FlashViewEventMark
+                     data:@{
+                            @"mark":frameNode.mark,
+                            @"index":@(frameNode.frameIndex),
+                            @"imageName": frameNode.imageName,
+                            @"layerIndex": @(self.index)
+                            }];
     }
 }
 
+//添加帧数据
 -(void)addKeyFrame:(FlashViewFrameNode *)keyFrame{
     [(NSMutableArray *)self.keyFrames addObject:keyFrame];
 }
