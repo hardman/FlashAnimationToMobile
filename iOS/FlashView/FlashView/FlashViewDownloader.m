@@ -1,10 +1,8 @@
-//
-//  FlashViewDownloader.m
-//  FlashView
-//
-//  Created by kaso on 1/9/16.
-//  Copyright © 2016年 kaso. All rights reserved.
-//
+/*
+ copyright 2016 wanghongyu.
+ The project page：https://github.com/hardman/FlashAnimationToMobile
+ My blog page: http://blog.csdn.net/hard_man/
+ */
 
 #import "FlashViewDownloader.h"
 

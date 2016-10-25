@@ -1,10 +1,8 @@
-//
-//  FlashViewAnim.m
-//  FlashView
-//
-//  Created by kaso on 19/10/16.
-//  Copyright © 2016年 kaso. All rights reserved.
-//
+/*
+ copyright 2016 wanghongyu.
+ The project page：https://github.com/hardman/FlashAnimationToMobile
+ My blog page: http://blog.csdn.net/hard_man/
+ */
 
 #import "FlashViewNode.h"
 #import "FlashViewTool.h"
@@ -26,6 +24,7 @@
 //层数据
 @interface FlashViewLayerNode()
 @property (nonatomic, strong) CALayer *layer;
+@property (nonatomic, strong) CALayer *colorLayer;
 @property (nonatomic, strong) NSMutableArray<FlashViewFrameNode *> *keyFrames;
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, FlashViewFrameNode *> *frameDict;
 @end
@@ -57,6 +56,13 @@
         _layer = [[CALayer alloc] init];
     }
     return _layer;
+}
+
+-(CALayer *)colorLayer{
+    if (!_colorLayer) {
+        _colorLayer = [[CALayer alloc] init];
+    }
+    return _colorLayer;
 }
 
 -(NSNumber *)getPerValue: (FlashViewFrameNode *)new old:(FlashViewFrameNode*)old key:(NSString *)key per:(float) per{
@@ -129,6 +135,7 @@
         [self.layer removeFromSuperlayer];
         return;
     }
+    
     CALayer *layer = self.layer;
     if (!layer.superlayer) {
         [self.tool.baseView.layer addSublayer:layer];
@@ -142,10 +149,6 @@
     
     if (!self.imageName || ![frameNode.imageName isEqualToString:self.imageName]) {
         UIImage *image = [self.tool imageWithName:frameNode.imageName];
-        if (!image) {
-            image = [UIImage imageWithContentsOfFile:[NSString stringWithFormat:@"%@/%@", self.tool.imagePath, frameNode.imageName]];
-            [self.tool addImage:image withName:frameNode.imageName];
-        }
         layer.contents = (__bridge id _Nullable)(image.CGImage);
         layer.bounds = CGRectMake(0, 0, image.size.width * self.tool.scale.x, image.size.height * self.tool.scale.y);
         layer.position = CGPointMake(self.tool.baseView.layer.bounds.size.width / 2, self.tool.baseView.layer.bounds.size.height / 2);
@@ -187,7 +190,7 @@
     layer.transform = t3d;
     
     //透明度
-    self.layer.opacity = frameNode.alpha / 255;
+    layer.opacity = frameNode.alpha / 255;
     
     if (!self.tool.isUseImplicitAnim) {
         //关闭隐式动画
