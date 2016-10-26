@@ -19,6 +19,9 @@
 //是否解析动画并存储对应的图片成功
 @property (nonatomic, unsafe_unretained) BOOL isInitOk;
 
+//运行模式，在主线程还是，后台线程运行
+@property (nonatomic, unsafe_unretained) FlashViewRunMode runMode;
+
 //是否启用隐式动画
 -(void) setUseImplicitAnim:(BOOL) isUseImplicitAnim;
 
@@ -59,5 +62,14 @@
 -(void) replaceImage:(NSString *)texName image:(UIImage *)image;
 
 //重新加载一个新的动画文件
+-(BOOL) reload:(NSString *)flashName;
+
+//重新加载一个新的动画文件
 -(BOOL) reload:(NSString *)flashName andAnimDir:(NSString *)animDir;
+
+//判断动画是否存在
++(BOOL) isAnimExist:(NSString *)flashName;
+
+//根据图片名获取动画图片
+-(UIImage *) animImageWithName:(NSString *)name;
 @end

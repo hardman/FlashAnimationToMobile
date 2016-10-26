@@ -8,8 +8,13 @@
 
 #import <UIKit/UIKit.h>
 
+typedef enum : NSUInteger {
+    TestTypeOldAnim,
+    TestTypeNewAnim,
+} TestType;
+
 @interface TestFlashViewController : UIViewController
 
-@property (nonatomic, unsafe_unretained) BOOL isNewFlashAnim;
+@property (nonatomic, unsafe_unretained) TestType testType;
 
 @end

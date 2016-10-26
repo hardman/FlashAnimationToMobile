@@ -7,8 +7,11 @@
 #import "FlashViewNode.h"
 #import "FlashViewTool.h"
 
+//角度转弧度
+#define ANGLE_TO_RADIUS(angle) (0.01745329252f * (angle))
+
 @implementation FlashViewBaseNode
--(void) updateToIndex:(NSInteger)index{}
+-(void) updateToIndex:(NSInteger)index lastIndex:(NSInteger) lastIndex{}
 -(void) trigerEventWithIndex:(NSInteger)index delegate:(id<FlashViewDelegate>)delegate{}
 -(void) onReady{}
 -(void) onClean{}
@@ -20,6 +23,40 @@
 
 //帧数据
 @implementation FlashViewFrameNode
+
+-(void) refresTransformValueWithScaleX:(CGFloat) scaleX scaleY:(CGFloat) scaleY{
+    CGAffineTransform transform = CGAffineTransformIdentity;
+    //旋转
+    if(self.skewX == self.skewY){
+        float radius = ANGLE_TO_RADIUS(self.skewX);
+        transform = CGAffineTransformMake(cosf(radius), sinf(radius), -sinf(radius), cosf(radius), 0, 0);
+    } else {
+        float radiusX = ANGLE_TO_RADIUS(self.skewX);
+        float radiusY = ANGLE_TO_RADIUS(self.skewY);
+        float cx = cosf(radiusX);
+        float sx = sinf(radiusX);
+        float cy = cosf(radiusY);
+        float sy = sinf(radiusY);
+        
+        float a = cy * transform.a - sx * transform.b;
+        float b = sy * transform.a + cx * transform.b;
+        float c = cy * transform.c - sx * transform.d;
+        float d = sy * transform.c + cx * transform.d;
+        float tx = cy * transform.tx - sx * transform.ty;
+        float ty = sy * transform.tx + cx * transform.ty;
+        
+        transform = CGAffineTransformMake(a, b, c, d, tx, ty);
+    }
+    
+    //缩放
+    transform = CGAffineTransformScale(transform, self.scaleX, self.scaleY);
+    
+    //平移
+    transform.tx = self.x * scaleX;
+    transform.ty = -self.y * scaleY;
+    
+    self.transformValue = [NSValue valueWithCGAffineTransform:transform];
+}
 @end
 
 //层数据
@@ -33,6 +70,17 @@
 
 @implementation FlashViewLayerNode
 
+//移除可显示的layers
+-(void) removeLayers{
+    [_layer removeFromSuperlayer];
+    [_colorLayer removeFromSuperlayer];
+}
+
+//将layer移动至首帧，并从superlayer上移除。
+-(void)resetLayer{
+    _layer.affineTransform = [self.frameDict[@(self.keyFrames.firstObject.frameIndex)].transformValue CGAffineTransformValue];
+}
+
 //计算出每一帧的数据(位置，大小等信息)
 -(void) onReady{
     [self createFrameDict];
@@ -40,9 +88,8 @@
 
 //移除所有layer和数据
 -(void) onClean{
-    [_layer removeFromSuperlayer];
+    [self removeLayers];
     _layer = nil;
-    [_colorLayer removeFromSuperlayer];
     _colorLayer = nil;
     _keyFrames = nil;
     _frameDict = nil;
@@ -146,18 +193,23 @@
                 targetFrameNode.imageName = currFrameNode.imageName;
             }
             self.frameDict[@(j)] = targetFrameNode;
+            
+            //预先计算transform。 没必要这样做。
+            if (!targetFrameNode.transformValue) {
+                [targetFrameNode refresTransformValueWithScaleX:self.tool.scale.x scaleY:self.tool.scale.y];
+            }
         }
+        
     }
 }
 
-//角度转弧度
-#define ANGLE_TO_RADIUS(angle) (0.01745329252f * (angle))
-
 //根据数据更新图片的各种信息
--(void) updateLayerViewWithFrameNode:(FlashViewFrameNode *)frameNode{
-    if (!frameNode || frameNode.isEmpty) {
-        [_layer removeFromSuperlayer];
-        [_colorLayer removeFromSuperlayer];
+-(void) updateLayerViewWithFrameNode:(FlashViewFrameNode *)frameNode isFirstFrame:(BOOL)isFirstFrame{
+    if (!frameNode) {
+        return;
+    }
+    if (frameNode.isEmpty) {
+        [self removeLayers];
         return;
     }
     
@@ -166,10 +218,13 @@
         [self.tool.baseView.layer addSublayer:layer];
     }
     
-    if (!self.tool.isUseImplicitAnim) {
+    if (!self.tool.isUseImplicitAnim || isFirstFrame) {
         //关闭隐式动画
         [CATransaction begin];
         [CATransaction setDisableActions:YES];
+    }else{
+        //设置隐式动画时间
+        [CATransaction setAnimationDuration: self.tool.implicitAnimDuration];
     }
     
     //设置图片
@@ -181,39 +236,8 @@
         self.imageName = frameNode.imageName;
     }
     
-    CGAffineTransform transform = CGAffineTransformIdentity;
-    //旋转
-    if(frameNode.skewX == frameNode.skewY){
-        float radius = ANGLE_TO_RADIUS(frameNode.skewX);
-        transform = CGAffineTransformMake(cosf(radius), sinf(radius), -sinf(radius), cosf(radius), 0, 0);
-    } else {
-        float radiusX = ANGLE_TO_RADIUS(frameNode.skewX);
-        float radiusY = ANGLE_TO_RADIUS(frameNode.skewY);
-        float cx = cosf(radiusX);
-        float sx = sinf(radiusX);
-        float cy = cosf(radiusY);
-        float sy = sinf(radiusY);
-        
-        float a = cy * transform.a - sx * transform.b;
-        float b = sy * transform.a + cx * transform.b;
-        float c = cy * transform.c - sx * transform.d;
-        float d = sy * transform.c + cx * transform.d;
-        float tx = cy * transform.tx - sx * transform.ty;
-        float ty = sy * transform.tx + cx * transform.ty;
-        
-        transform = CGAffineTransformMake(a, b, c, d, tx, ty);
-    }
-    
-    //缩放
-    transform = CGAffineTransformScale(transform, frameNode.scaleX, frameNode.scaleY);
-    
-    //平移
-    transform.tx = frameNode.x * self.tool.scale.x;
-    transform.ty = -frameNode.y * self.tool.scale.y;
-    
-    CATransform3D t3d = CATransform3DMakeAffineTransform(transform);
-    t3d.m43 = self.index;
-    layer.transform = t3d;
+    //变换
+    layer.affineTransform = [frameNode.transformValue CGAffineTransformValue];
     
     //透明度
     layer.opacity = frameNode.alpha / 255;
@@ -235,17 +259,37 @@
         self.colorLayer.position = layer.position;
         self.colorLayer.transform = layer.transform;
     }else{
-        [self.colorLayer removeFromSuperlayer];
+        [_colorLayer removeFromSuperlayer];
     }
     
-    if (!self.tool.isUseImplicitAnim) {
+    if (!self.tool.isUseImplicitAnim || isFirstFrame) {
         //关闭隐式动画
         [CATransaction commit];
     }
 }
 
--(void)updateToIndex:(NSInteger)index{
-    [self updateLayerViewWithFrameNode:self.frameDict[@(index)]];
+-(void)updateToIndex:(NSInteger)index lastIndex:(NSInteger) lastIndex{
+    //为了不丢帧，绘制工作扔到主线程，用隐式动画可去除卡顿感
+    __weak FlashViewLayerNode *layerNode = self;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        FlashViewFrameNode *frameNode = layerNode.frameDict[@(index)];
+        if (frameNode && !frameNode.isEmpty) {
+            [layerNode updateLayerViewWithFrameNode:frameNode isFirstFrame:(lastIndex > index)];
+        }else{
+            //因为 frameDict 只为 tween动画做了索引，非tween动画只保存关键帧。
+            //所以 如果当前帧比最后一个关键帧有效范围还要大，那么需要移除此帧
+            FlashViewFrameNode *lastFrameNode = nil;
+            for (NSInteger i = layerNode.keyFrames.count - 1; i >= 0; i--) {
+                lastFrameNode = layerNode.keyFrames[i];
+                if (!lastFrameNode.isEmpty) {
+                    break;
+                }
+            }
+            if (frameNode.isEmpty || !lastFrameNode || (index > lastFrameNode.frameIndex + lastFrameNode.duration)) {
+                [layerNode removeLayers];
+            }
+        }
+    });
 }
 
 -(void)trigerEventWithIndex:(NSInteger)index delegate:(id<FlashViewDelegate>)delegate{
@@ -298,6 +342,13 @@
     [(NSMutableArray *)self.layers addObject:layer];
 }
 
+//移除可显示的layers
+-(void) removeLayers{
+    for (FlashViewLayerNode *layerNode in self.layers) {
+        [layerNode removeLayers];
+    }
+}
+
 -(NSMutableArray<FlashViewLayerNode *> *)layers{
     if (!_layers) {
         _layers = [[NSMutableArray alloc] init];
@@ -305,9 +356,10 @@
     return _layers;
 }
 
--(void)updateToIndex:(NSInteger)index{
-    for (FlashViewLayerNode *layerNode in self.layers) {
-        [layerNode updateToIndex:index];
+-(void)updateToIndex:(NSInteger)index lastIndex:(NSInteger) lastIndex{
+    for (NSInteger i = self.layers.count - 1; i >= 0; i--) {
+        FlashViewLayerNode *layerNode = self.layers[i];
+        [layerNode updateToIndex:index lastIndex:lastIndex];
     }
 }
 

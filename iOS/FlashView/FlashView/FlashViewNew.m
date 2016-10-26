@@ -85,7 +85,12 @@
     mToIndex = 0;
     mLoopTimes = 0;
     mTotalLoopTimes = 0;
-    mLastPlayIndex = 0;
+    mLastPlayIndex = -1;
+    
+    [self setScaleMode:ScaleModeRespective andDesignResolution:CGSizeMake(640, 1136)];
+    
+    CGSize screenSize = [UIScreen mainScreen].bounds.size;
+    self.frame = CGRectMake(0, 0, screenSize.width, screenSize.height);
     
     mFileManager = [NSFileManager defaultManager];
     mMainBundle = [NSBundle mainBundle];
@@ -136,11 +141,6 @@
     }
     
     mIsInitOk = YES;
-    
-    [self setScaleMode:ScaleModeRespective andDesignResolution:CGSizeMake(640, 1136)];
-    
-    CGSize screenSize = [UIScreen mainScreen].bounds.size;
-    self.frame = CGRectMake(0, 0, screenSize.width, screenSize.height);
     
     return YES;
 }
@@ -256,6 +256,8 @@
     NSInteger frameRate = [jsonDict[@"frameRate"] integerValue];
     NSInteger oneFrameTime = 1000 / frameRate;
     
+    self.tool.implicitAnimDuration = 1.0 / frameRate;
+    
     if (!mFlashViewNode) {
         mFlashViewNode = [[FlashViewNode alloc] init];
         mFlashViewNode.oneFrameDurationMs = oneFrameTime;
@@ -321,6 +323,8 @@
     FlashViewDataReader *dataReader = [[FlashViewDataReader alloc] initWithNSData:binData];
     NSInteger frameRate = [dataReader readUShort];
     NSInteger oneFrameTime = 1000 / frameRate;
+    
+    self.tool.implicitAnimDuration = 1.0 / frameRate;
     
     if (!mFlashViewNode) {
         mFlashViewNode = [[FlashViewNode alloc] init];
@@ -398,7 +402,7 @@
         return;
     }
     FlashViewAnimNode *animNode = mFlashViewNode.anims[mPlayingAnimName];
-    [animNode updateToIndex:frameIndex];
+    [animNode updateToIndex:frameIndex lastIndex:mLastPlayIndex];
 }
 
 //动画内事件
@@ -470,20 +474,31 @@
         [self onEvent:FlashViewEventFrame data:@(currIndex)];
     }
     
+    //初始化lastPlayIndex
+    if (mLastPlayIndex < 0) {
+        mLastPlayIndex = 0;
+    }
+    
     //触发事件
     [self triggerEventWithCurrTime:currTime];
     
     //判断结束事件
     FlashViewAnimNode *animNode = mFlashViewNode.anims[mPlayingAnimName];
-    if (mTotalLoopTimes != 0) {
-        if (currIndex + 1 >= animNode.frameCount || currIndex < mLastPlayIndex) {
-            mLoopTimes++;
-            [self onEvent:FlashViewEventOneLoopEnd data:@(mLoopTimes)];
-            if (mLoopTimes >= mTotalLoopTimes) {
-                [self stop];
-                return;
-            }
+    if (currIndex + 1 >= animNode.frameCount || currIndex < mLastPlayIndex) {
+        mLoopTimes++;
+        [self onEvent:FlashViewEventOneLoopEnd data:@(mLoopTimes)];
+        if (mTotalLoopTimes != FlashLoopTimeForever && mLoopTimes >= mTotalLoopTimes) {
+            [self stop];
+            return;
         }
+        
+        //结束后移除所有sublayer，防止重播时，首尾帧不同时出现的闪烁情况。
+        [CATransaction begin];
+        [CATransaction setDisableActions:YES];
+        for(FlashViewLayerNode *layerNode in mFlashViewNode.anims[mPlayingAnimName].layers){
+            [layerNode resetLayer];
+        }
+        [CATransaction commit];
     }
     
     //重置状态
@@ -517,7 +532,7 @@
 //播放动画
 -(void) play:(NSString *) animName loopTimes:(NSInteger) loopTimes fromIndex:(NSInteger) fromIndex toIndex:(NSInteger) toIndex{
     if (isPlaying) {
-        [self stop];
+        [self stopInner];
     }
     isPlaying = YES;
     mPlayingAnimName = animName;
@@ -550,7 +565,7 @@
 -(void)stopAtFrameIndex:(NSInteger)frameIndex animName:(NSString *)animName{
     FlashViewAnimNode *animNode = mFlashViewNode.anims[animName];
     if (animNode && frameIndex >= 0 && frameIndex < animNode.frameCount) {
-        [animNode updateToIndex:frameIndex];
+        [animNode updateToIndex:frameIndex lastIndex:-1];
     }
 }
 //暂停
@@ -563,8 +578,10 @@
     isPlaying = YES;
 }
 
-//停止动画
--(void) stop{
+-(void) stopInner{
+    //清除当前view
+    [mFlashViewNode.anims[mPlayingAnimName] onClean];
+    
     isPlaying = NO;
     mPlayingAnimName = nil;
     mStartTimeMs = 0;
@@ -572,9 +589,14 @@
     mToIndex = 0;
     mLoopTimes = 0;
     mTotalLoopTimes = 0;
-    mLastPlayIndex = 0;
+    mLastPlayIndex = -1;
     [self.displayLink invalidate];
     mDisplayLink = nil;
+}
+
+//停止动画
+-(void) stop{
+    [self stopInner];
     [self onEvent:FlashViewEventStop data:nil];
 }
 
@@ -584,8 +606,13 @@
 }
 
 //重新加载一个新的动画文件
+-(BOOL) reload:(NSString *)flashName{
+    return [self reload:flashName andAnimDir:FLASH_VIEW_DEFAULT_DIR_NAME];
+}
+
+//重新加载一个新的动画文件
 -(BOOL) reload:(NSString *)flashName andAnimDir:(NSString *)animDir{
-    [self stop];
+    [self stopInner];
     mFlashViewNode = nil;
     self.tool = nil;
     mFlashName = flashName;
@@ -607,6 +634,39 @@
             [self.displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
         }
     }
+}
+
+//判断动画是否存在
++(BOOL) isAnimExist:(NSString *)flashName{
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSBundle *mainBundle = [NSBundle mainBundle];
+    NSString *writablePath = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    //先查找是否存在flajson文件，不存在则查找flabin。都不存在则初始化错误。并且确定文件是在Resource中还是在Document中
+    NSString * filePath = [mainBundle pathForResource:[NSString stringWithFormat:@"%@.flajson", flashName] ofType:nil];
+    if (!filePath) {
+        filePath = [mainBundle pathForResource:[NSString stringWithFormat:@"%@.flabin", flashName] ofType:nil];
+        if (!filePath) {
+            filePath = [NSString stringWithFormat:@"%@/%@/%@.flajson", writablePath, FLASH_VIEW_DEFAULT_DIR_NAME, flashName];
+            if ([fileManager fileExistsAtPath:filePath]) {
+                return YES;
+            }else{
+                filePath = [NSString stringWithFormat:@"%@/%@/%@.flabin", writablePath, FLASH_VIEW_DEFAULT_DIR_NAME, flashName];
+                if ([fileManager fileExistsAtPath:filePath]) {
+                    return YES;
+                }
+            }
+        }else{
+            return YES;
+        }
+    }else{
+        return YES;
+    }
+    return NO;
+}
+
+//根据图片名获取动画图片
+-(UIImage *) animImageWithName:(NSString *)name{
+    return [self.tool imageWithName:name];
 }
 
 @end

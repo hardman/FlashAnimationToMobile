@@ -35,6 +35,8 @@
 #import "FlashViewCommon.h"
 
 @interface FlashView : UIView
+//文件是否存在，如aaaa.fla则传入aaaa
++(BOOL) isAnimExist:(NSString *)flashName;
 @property (nonatomic, weak) id<FlashViewDelegate> delegate;//事件回调代理
 @property (nonatomic, copy) FlashUIntCallback onEventBlock;//事件回调block
 @property (nonatomic, unsafe_unretained) FlashViewRunMode runMode;//运行模式，在主线程还是，后台线程运行
@@ -81,6 +83,9 @@
 
 //替换某一个动画元件的图片
 -(void) replaceImage:(NSString *)texName image:(UIImage *)image;
+
+//重新加载一个新的动画文件
+-(BOOL) reload:(NSString *)flashName;
 
 //重新加载一个新的动画文件
 -(BOOL) reload:(NSString *)flashName andAnimDir:(NSString *)animDir;

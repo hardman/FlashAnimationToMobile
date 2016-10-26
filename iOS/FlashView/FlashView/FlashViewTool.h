@@ -17,10 +17,11 @@
 //根据适配规则，计算出的缩放比例
 @property (nonatomic, unsafe_unretained) CGPoint scale;
 
-//是否开启隐式动画，默认关闭，如果打开，动画效果会比较丝滑，但是某些动画会变样，请根据具体情况使用。
-//简单动画建议开启：如秀场
-//复杂动画建议关闭：如人物动态(跑，跳，攻击，防御。。)
+//是否开启隐式动画，默认打开，动画效果会比较丝滑。如果感觉动画效果不对，可以关闭。
 @property (nonatomic, unsafe_unretained) BOOL isUseImplicitAnim;
+
+//隐式动画时间，默认 1.0/30 s
+@property (nonatomic, unsafe_unretained) CGFloat implicitAnimDuration;
 
 //增加图片
 -(void) addImage:(UIImage *)image withName:(NSString *)name;

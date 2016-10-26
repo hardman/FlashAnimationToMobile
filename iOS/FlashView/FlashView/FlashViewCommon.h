@@ -54,7 +54,7 @@ typedef enum : NSUInteger {
     ScaleModeDefault,//默认，不处理
 } ScaleMode;
 
-//动画运行线程(deprecated)
+//动画运行线程
 typedef enum : NSUInteger {
     FlashViewRunModeBackgroundThread,//动画在后台线程运行（建议）
     FlashViewRunModeMainThread,//动画在主线程运行

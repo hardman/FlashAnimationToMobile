@@ -11,7 +11,7 @@
 //数据基类
 @interface FlashViewBaseNode: NSObject
 //刷新到第几帧
--(void) updateToIndex:(NSInteger) index;
+-(void) updateToIndex:(NSInteger) index lastIndex:(NSInteger) lastIndex;
 //触发回调事件
 -(void) trigerEventWithIndex:(NSInteger)index delegate:(id<FlashViewDelegate>)delegate;
 //数据初始化完成
@@ -51,6 +51,8 @@
 @property (nonatomic, unsafe_unretained) unsigned char g;
 @property (nonatomic, unsafe_unretained) unsigned char b;
 @property (nonatomic, unsafe_unretained) unsigned char a;
+
+@property (nonatomic, strong) NSValue *transformValue;
 @end
 
 //层数据：绘制工作和主要逻辑都在这里
@@ -65,6 +67,10 @@
 -(void) addKeyFrame:(FlashViewFrameNode *)keyFrame;
 //layer的上下层次
 @property (nonatomic, unsafe_unretained) NSInteger index;
+//隐藏layer并归零
+-(void) resetLayer;
+//移除可显示的layers
+-(void) removeLayers;
 @end
 
 //动画数据
@@ -77,6 +83,8 @@
 @property (nonatomic, readonly, strong) NSArray<FlashViewLayerNode *> *layers;
 //添加layer
 -(void) addLayer:(FlashViewLayerNode *) layer;
+//移除可显示的layers
+-(void) removeLayers;
 @end
 
 //所有动画数据

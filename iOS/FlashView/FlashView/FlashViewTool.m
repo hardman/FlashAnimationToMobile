@@ -12,6 +12,18 @@
 @end
 
 @implementation FlashViewTool
+
+- (instancetype)init
+{
+    self = [super init];
+    if (self) {
+        self.scale = CGPointMake(1, 1);
+        self.isUseImplicitAnim = YES;
+        self.implicitAnimDuration = 1.0 / 30;
+    }
+    return self;
+}
+
 -(NSMutableDictionary<NSString *,UIImage *> *)images{
     if (!_images) {
         _images = [[NSMutableDictionary alloc] init];

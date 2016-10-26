@@ -355,6 +355,11 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
 //timer end
 
 //停止当前动画，并重新加载一个新的动画文件。
+-(BOOL) reload:(NSString *)flashName{
+    return [self reload:flashName andAnimDir:FLASH_VIEW_DEFAULT_DIR_NAME];
+}
+
+//停止当前动画，并重新加载一个新的动画文件。
 -(BOOL)reload:(NSString *)flashName andAnimDir:(NSString *)animDir{
     [self cleanData];
     mFlashName = flashName;

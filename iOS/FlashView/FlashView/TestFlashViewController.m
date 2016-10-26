@@ -9,63 +9,189 @@
 #import "TestFlashViewController.h"
 #import "FlashView.h"
 #import "FlashViewNew.h"
+#import <objc/runtime.h>
 
 /**
  *  测试FlashView
  */
 
+static char *keynamefortest = 0;
+
 @interface TestFlashViewController ()
+
+@property (nonatomic, strong) FlashView *flashView;
+
+@property (nonatomic, strong) FlashViewNew *flashViewNew;
+
+@property (nonatomic, unsafe_unretained) NSInteger currAnimIndex;
+
+@property (nonatomic, copy) NSString * currAnim;
 
 @end
 
 @implementation TestFlashViewController
-
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     self.view.backgroundColor = [UIColor whiteColor];
     
-    if (self.isNewFlashAnim) {
-        [self testFlashViewNew];
-    }else{
-        [self testFlashView];
+    [self buildTestFlashView];
+}
+
+-(FlashView *)flashView{
+    if (!_flashView) {
+        _flashView = [[FlashView alloc] init];
+        [self.view addSubview:_flashView];
+    }
+    return _flashView;
+}
+
+-(FlashViewNew *)flashViewNew{
+    if (!_flashViewNew) {
+        _flashViewNew = [[FlashViewNew alloc] init];
+        [self.view addSubview:_flashViewNew];
+    }
+    return _flashViewNew;
+}
+
+-(void) buildTestFlashView{
+    id flashAnimsData = @[].mutableCopy;
+    NSString *parent = [[NSBundle mainBundle] bundlePath];
+    NSArray *paths = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:parent error:nil];
+    for (NSString *path in paths) {
+        if ([path hasSuffix:@".flabin"]) {
+            NSString *prefix = [path substringToIndex:path.length - @".flabin".length];
+            [flashAnimsData addObject:prefix];
+        }
+        if ([path hasSuffix:@".flajson"]) {
+            NSString *prefix = [path substringToIndex:path.length - @".flajson".length];
+            [flashAnimsData addObject:prefix];
+        }
+    }
+    
+    CGSize screenSize = [UIScreen mainScreen].bounds.size;
+    UIScrollView *sc = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, screenSize.width, screenSize.height)];
+    sc.tag = 123456;
+    sc.bounces = YES;
+    sc.backgroundColor = [UIColor greenColor];
+    UIView *scContainer = [[UIView alloc] init];
+    [self.view addSubview:sc];
+    [sc addSubview:scContainer];
+    
+    UIView *lastView = nil;
+    for (id data in flashAnimsData) {
+        UIView *view = [[UIView alloc] initWithFrame:CGRectMake(0, lastView ? lastView.frame.origin.y + lastView.frame.size.height: 0, screenSize.width, 50)];
+        [sc addSubview:view];
+        
+        objc_setAssociatedObject(view, &keynamefortest, data, OBJC_ASSOCIATION_COPY_NONATOMIC);
+        
+        [view addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(clickOnAnimForTest:)]];
+        
+        UILabel *nameLabel = [UILabel new];
+        [view addSubview:nameLabel];
+        nameLabel.text = data;
+        nameLabel.frame = CGRectMake(15, 20, 0, 0);
+        [nameLabel sizeToFit];
+        
+        UIView *lineView = [[UIView alloc] initWithFrame:CGRectMake(0, 50, screenSize.width, 1)];
+        lineView.backgroundColor = [UIColor blackColor];
+        [view addSubview:lineView];
+        lastView = view;
+    }
+    
+    UIButton *closeAnimBtn = [[UIButton alloc] initWithFrame:CGRectMake(screenSize.width - 200, 100, 200, 100)];
+    [closeAnimBtn setTitle:@"关闭当前动画" forState:UIControlStateNormal];
+    [closeAnimBtn setTitleColor:[UIColor grayColor] forState:UIControlStateHighlighted];
+    [closeAnimBtn addTarget:self action:@selector(onClickCloseAnim) forControlEvents:UIControlEventTouchUpInside];
+    [self.view addSubview:closeAnimBtn];
+    
+    sc.contentSize = CGSizeMake(screenSize.width, lastView.frame.origin.y + 50);
+}
+
+-(void) onClickCloseAnim{
+    switch (self.testType) {
+        case TestTypeNewAnim:{
+            [self.flashViewNew removeFromSuperview];
+            self.flashViewNew = nil;
+        }
+            break;
+        case TestTypeOldAnim:{
+            [self.flashView removeFromSuperview];
+            self.flashView = nil;
+        }
     }
 }
 
--(void) testFlashViewNew{
-    FlashViewNew *flashViewNew = [[FlashViewNew alloc] initWithFlashName:@"bieshu"];
-    flashViewNew.frame = self.view.frame;
-    [self.view addSubview:flashViewNew];
-    [flashViewNew play:flashViewNew.animNames.firstObject loopTimes:FlashLoopTimeForever];
-    
-    [self performSelector:@selector(loadCar:) withObject:flashViewNew afterDelay:10];
-}
-
--(void) testFlashView{
-    FlashView *flashView = [[FlashView alloc] initWithFlashName:@"bieshu"];
-    flashView.frame = self.view.frame;// CGRectMake(100, 100, 200, 500);
-    flashView.backgroundColor = [UIColor clearColor];
-    [self.view addSubview:flashView];
-    [flashView play:flashView.animNames.firstObject  loopTimes:FlashLoopTimeForever];
-    
-    [self performSelector:@selector(loadCar:) withObject:flashView afterDelay:10];
-}
-
--(void) reload:(id)flashView{
-    [flashView reload:@"heiniao" andAnimDir:nil];
-    [flashView play:@"atk" loopTimes:FlashLoopTimeForever];
-    [self performSelector:@selector(loadCar:) withObject:flashView afterDelay:3];
-    [flashView setOnEventBlock:^(FlashViewEvent evt, id data){
-        if (evt == FlashViewEventMark) {
-            NSLog(@"触发事件 %u, data=%@", evt, data);
+-(void)clickOnAnimForTest:(UIGestureRecognizer*)gesture{
+    NSString *name = objc_getAssociatedObject(gesture.view, &keynamefortest);
+    switch (self.testType) {
+        case TestTypeNewAnim:{
+            self.flashViewNew.userInteractionEnabled = YES;
+            if (!self.currAnim) {
+                if (!self.flashViewNew.superview) {
+                    [self.view addSubview:self.flashViewNew];
+                }
+                if(![self.flashViewNew reload:name]){
+                    NSLog(@"reload error for name %@", name);
+                    return;
+                }
+                self.currAnim = name;
+            }
+            NSArray *anims = self.flashViewNew.animNames;
+            if (anims.count == 0) {
+                return;
+            }
+            [self.flashViewNew play:anims[self.currAnimIndex] loopTimes:FlashLoopTimeOnce];
+            
+            __weak TestFlashViewController *weakCtl = self;
+            __weak FlashViewNew *weakFlashView = self.flashViewNew;
+            self.flashViewNew.onEventBlock = ^(FlashViewEvent evt, id data){
+                if (evt == FlashViewEventStop) {
+                    if (weakCtl.currAnimIndex >= anims.count - 1) {
+                        [weakFlashView removeFromSuperview];
+                        weakCtl.currAnimIndex = 0;
+                        weakCtl.currAnim = nil;
+                    }else{
+                        weakCtl.currAnimIndex++;
+                        [weakCtl clickOnAnimForTest:nil];
+                    }
+                }
+            };
         }
-    }];
-}
-
--(void) loadCar:(id)flashView{
-    [flashView reload:@"testDB" andAnimDir:nil];
-    [flashView play:@"applanbo" loopTimes:FlashLoopTimeForever];
-    [self performSelector:@selector(reload:) withObject:flashView afterDelay:3];
+            break;
+        case TestTypeOldAnim:{
+            self.flashView.userInteractionEnabled = YES;
+            if (!self.currAnim) {
+                if (!self.flashView.superview) {
+                    [self.view addSubview:self.flashView];
+                }
+                [self.flashView reload:name];
+                self.currAnim = name;
+            }
+            NSArray *anims = self.flashView.animNames;
+            if (anims.count == 0) {
+                return;
+            }
+            [self.flashView play:anims[self.currAnimIndex] loopTimes:FlashLoopTimeOnce];
+            
+            __weak TestFlashViewController *weakCtl = self;
+            __weak FlashView *weakFlashView = self.flashView;
+            self.flashView.onEventBlock = ^(FlashViewEvent evt, id data){
+                if (evt == FlashViewEventStop) {
+                    if (weakCtl.currAnimIndex >= anims.count - 1) {
+                        [weakFlashView removeFromSuperview];
+                        weakCtl.currAnimIndex = 0;
+                        weakCtl.currAnim = nil;
+                    }else{
+                        weakCtl.currAnimIndex++;
+                        [weakCtl clickOnAnimForTest:nil];
+                        //                        [weakCtl performSelector:@selector(clickOnAnimForTest:) withObject:nil afterDelay:0];
+                    }
+                }
+            };
+        }
+            break;
+    }
 }
 
 -(void)willMoveToParentViewController:(UIViewController *)parent{
