@@ -18,6 +18,8 @@
 @property (nonatomic, unsafe_unretained) CGPoint scale;
 
 //是否开启隐式动画，默认关闭，如果打开，动画效果会比较丝滑，但是某些动画会变样，请根据具体情况使用。
+//简单动画建议开启：如秀场
+//复杂动画建议关闭：如人物动态(跑，跳，攻击，防御。。)
 @property (nonatomic, unsafe_unretained) BOOL isUseImplicitAnim;
 
 //增加图片
