@@ -509,7 +509,7 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
         float mark = (oldValue < 0) ? -1 : 1;
         float mid = 180 * mark;
         float newStart = -mid;
-        float midPer = (mid - oldValue) / realSpan;
+        float midPer = fabsf(mid - oldValue) / realSpan;
         if (per < midPer) {
             ret = oldValue + per * realSpan * mark;
         }else{

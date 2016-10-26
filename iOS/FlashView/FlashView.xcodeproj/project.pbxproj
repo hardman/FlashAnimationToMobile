@@ -87,6 +87,8 @@
 		A45866901DC088CA007EED31 /* mutiFlowerRandom_9999_9999.png in Resources */ = {isa = PBXBuildFile; fileRef = A458668C1DC088CA007EED31 /* mutiFlowerRandom_9999_9999.png */; };
 		A45866911DC088CA007EED31 /* mutiFlowerRandom.flajson in Resources */ = {isa = PBXBuildFile; fileRef = A458668D1DC088CA007EED31 /* mutiFlowerRandom.flajson */; };
 		A45866931DC0B0BC007EED31 /* heiniao.flajson in Resources */ = {isa = PBXBuildFile; fileRef = A45866921DC0B0BC007EED31 /* heiniao.flajson */; };
+		A45866961DC0B94C007EED31 /* testHeiniao.flajson in Resources */ = {isa = PBXBuildFile; fileRef = A45866951DC0B94C007EED31 /* testHeiniao.flajson */; };
+		A45866981DC0B9BE007EED31 /* testHeiniao_heiniao_tou.png in Resources */ = {isa = PBXBuildFile; fileRef = A45866971DC0B9BE007EED31 /* testHeiniao_heiniao_tou.png */; };
 		A4740E991DB73B0E006CF2F3 /* FlashViewNew.m in Sources */ = {isa = PBXBuildFile; fileRef = A4740E981DB73B0E006CF2F3 /* FlashViewNew.m */; };
 		A4740E9C1DB73EF2006CF2F3 /* FlashViewDataReader.m in Sources */ = {isa = PBXBuildFile; fileRef = A4740E9B1DB73EF2006CF2F3 /* FlashViewDataReader.m */; };
 		A4740E9F1DB740E3006CF2F3 /* FlashViewNode.m in Sources */ = {isa = PBXBuildFile; fileRef = A4740E9E1DB740E3006CF2F3 /* FlashViewNode.m */; };
@@ -220,6 +222,8 @@
 		A458668C1DC088CA007EED31 /* mutiFlowerRandom_9999_9999.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = mutiFlowerRandom_9999_9999.png; sourceTree = "<group>"; };
 		A458668D1DC088CA007EED31 /* mutiFlowerRandom.flajson */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = mutiFlowerRandom.flajson; sourceTree = "<group>"; };
 		A45866921DC0B0BC007EED31 /* heiniao.flajson */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = heiniao.flajson; sourceTree = "<group>"; };
+		A45866951DC0B94C007EED31 /* testHeiniao.flajson */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = testHeiniao.flajson; sourceTree = "<group>"; };
+		A45866971DC0B9BE007EED31 /* testHeiniao_heiniao_tou.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = testHeiniao_heiniao_tou.png; sourceTree = "<group>"; };
 		A4740E971DB73B0E006CF2F3 /* FlashViewNew.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlashViewNew.h; sourceTree = "<group>"; };
 		A4740E981DB73B0E006CF2F3 /* FlashViewNew.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FlashViewNew.m; sourceTree = "<group>"; };
 		A4740E9A1DB73EF2006CF2F3 /* FlashViewDataReader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FlashViewDataReader.h; sourceTree = "<group>"; };
@@ -423,6 +427,14 @@
 			path = mutiFlowerRandom;
 			sourceTree = "<group>";
 		};
+		A45866941DC0B94C007EED31 /* testHeiniao */ = {
+			isa = PBXGroup;
+			children = (
+				A45866971DC0B9BE007EED31 /* testHeiniao_heiniao_tou.png */,
+			);
+			path = testHeiniao;
+			sourceTree = "<group>";
+		};
 		A4740E961DB73AFA006CF2F3 /* FlashViewNew */ = {
 			isa = PBXGroup;
 			children = (
@@ -565,6 +577,8 @@
 				A458662C1DC046F3007EED31 /* laba.flajson */,
 				A45866371DC0472C007EED31 /* zi_new */,
 				A45866491DC0472C007EED31 /* zi_new.flajson */,
+				A45866941DC0B94C007EED31 /* testHeiniao */,
+				A45866951DC0B94C007EED31 /* testHeiniao.flajson */,
 			);
 			name = flashAnims;
 			path = FlashView/Resources/flashAnims;
@@ -629,6 +643,7 @@
 			files = (
 				A40149C61C210F0800201BFA /* heiniao_yougebo_2.png in Resources */,
 				A4A87E941C2827B300649A1A /* testDB_c1.png in Resources */,
+				A45866961DC0B94C007EED31 /* testHeiniao.flajson in Resources */,
 				A4A87EA41C2900E500649A1A /* bieshu_xinxin.png in Resources */,
 				A4A87E8A1C2827B300649A1A /* testDB_16.png in Resources */,
 				A4A87E841C2827B300649A1A /* testDB_10.png in Resources */,
@@ -640,6 +655,7 @@
 				A458665A1DC0472C007EED31 /* zi_new_xt.png in Resources */,
 				A40149AA1C210F0800201BFA /* heiniao_chibang_05.png in Resources */,
 				A40149A61C210F0800201BFA /* heiniao_chibang_01.png in Resources */,
+				A45866981DC0B9BE007EED31 /* testHeiniao_heiniao_tou.png in Resources */,
 				A45866321DC046F3007EED31 /* laba_bai3.png in Resources */,
 				A45866901DC088CA007EED31 /* mutiFlowerRandom_9999_9999.png in Resources */,
 				A40149AE1C210F0800201BFA /* heiniao_fazhang.png in Resources */,
