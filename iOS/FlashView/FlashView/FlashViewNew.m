@@ -293,8 +293,8 @@
                 frameNode.frameIndex = [keyFrame[@"frameIndex"] intValue];
                 frameNode.isEmpty = [keyFrame[@"isEmpty"] boolValue];
                 if (!frameNode.isEmpty) {
-                    frameNode.isTween = [keyFrame[@"isTween"] boolValue];
                     frameNode.duration = [keyFrame[@"duration"] intValue];
+                    frameNode.isTween = [keyFrame[@"isTween"] boolValue];
                     frameNode.imageName = keyFrame[@"texName"];
                     frameNode.x = [keyFrame[@"x"] floatValue];
                     frameNode.y = [keyFrame[@"y"] floatValue];
@@ -308,6 +308,8 @@
                     frameNode.g = [keyFrame[@"color"][@"g"] charValue];
                     frameNode.b = [keyFrame[@"color"][@"b"] charValue];
                     frameNode.a = [keyFrame[@"color"][@"a"] charValue];
+                }else{
+                    frameNode.duration = 1;
                 }
             }
         }
@@ -394,6 +396,8 @@
                     frameNode.skewY = [dataReader readFloat];
                     frameNode.x = [dataReader readFloat];
                     frameNode.y = [dataReader readFloat];
+                }else{
+                    frameNode.duration = 1;
                 }
             }
         }
@@ -634,11 +638,17 @@
 
 //重新加载一个新的动画文件
 -(BOOL) reload:(NSString *)flashName andAnimDir:(NSString *)animDir{
+    return [self reload:flashName andAnimDir:animDir scaleMode:ScaleModeRespective designResolution:CGSizeMake(640, 1136)];
+}
+
+//重新加载一个新的动画文件
+-(BOOL) reload:(NSString *)flashName andAnimDir:(NSString *)animDir scaleMode:(ScaleMode)scaleMode designResolution:(CGSize)resolution{
     [self stopInner];
     mFlashViewNode = nil;
     self.tool = nil;
     mFlashName = flashName;
     mFlashAnimDir = animDir;
+    [self setScaleMode:scaleMode andDesignResolution:resolution];
     if (![self innerInit]) {
         return NO;
     }

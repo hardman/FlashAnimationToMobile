@@ -63,6 +63,9 @@
 //重新加载一个新的动画文件
 -(BOOL) reload:(NSString *)flashName andAnimDir:(NSString *)animDir;
 
+//重新加载一个新的动画文件
+-(BOOL) reload:(NSString *)flashName andAnimDir:(NSString *)animDir scaleMode:(ScaleMode)scaleMode designResolution:(CGSize)resolution;
+
 //判断动画是否存在
 +(BOOL) isAnimExist:(NSString *)flashName;
 
