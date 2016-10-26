@@ -166,7 +166,6 @@ static char *keynamefortest = 0;
                     }else{
                         weakCtl.currAnimIndex++;
                         [weakCtl clickOnAnimForTest:nil];
-                        //                        [weakCtl performSelector:@selector(clickOnAnimForTest:) withObject:nil afterDelay:0];
                     }
                 }
             };

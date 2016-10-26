@@ -492,13 +492,8 @@
             return;
         }
         
-        //结束后移除所有sublayer，防止重播时，首尾帧不同时出现的闪烁情况。
-        [CATransaction begin];
-        [CATransaction setDisableActions:YES];
-        for(FlashViewLayerNode *layerNode in mFlashViewNode.anims[mPlayingAnimName].layers){
-            [layerNode resetLayer];
-        }
-        [CATransaction commit];
+        //结束后移除所有sublayer，防止重播时，首尾帧不在相同位置出现的闪烁情况。
+        [self resetLayers];
     }
     
     //重置状态
@@ -509,6 +504,15 @@
     }else{
         mLastFrameTimeMs = currTime;
     }
+}
+
+-(void) resetLayers{
+    [CATransaction begin];
+    [CATransaction setDisableActions:YES];
+    for(FlashViewLayerNode *layerNode in mFlashViewNode.anims[mPlayingAnimName].layers){
+        [layerNode resetLayer];
+    }
+    [CATransaction commit];
 }
 
 //计时器
@@ -531,10 +535,9 @@
 
 //播放动画
 -(void) play:(NSString *) animName loopTimes:(NSInteger) loopTimes fromIndex:(NSInteger) fromIndex toIndex:(NSInteger) toIndex{
-    if (isPlaying) {
-        [self stopInner];
+    if (!isPlaying) {
+        [self.displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
     }
-    isPlaying = YES;
     mPlayingAnimName = animName;
     NSInteger maxIndex = mFlashViewNode.anims[mPlayingAnimName].frameCount - 1;
     mFromIndex = fromIndex;
@@ -547,11 +550,11 @@
     }
     mTotalLoopTimes = loopTimes;
     mLoopTimes = 0;
-    [self.displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
     mStartTimeMs = self.currentTimeMs;
     mLastFrameTimeMs = mStartTimeMs;
     
     [self onEvent:FlashViewEventStart data:nil];
+    isPlaying = YES;
 }
 
 //设置循环次数

@@ -277,7 +277,8 @@
             [layerNode updateLayerViewWithFrameNode:frameNode isFirstFrame:(lastIndex > index)];
         }else{
             //因为 frameDict 只为 tween动画做了索引，非tween动画只保存关键帧。
-            //所以 如果当前帧比最后一个关键帧有效范围还要大，那么需要移除此帧
+            //所以 如果当前帧比最后一个[有效]关键帧有效范围还要大，那么需要移除此帧。
+            //为什么写有效关键帧呢，因为可能后面有N帧是empty，此时需要忽略empty帧。
             FlashViewFrameNode *lastFrameNode = nil;
             for (NSInteger i = layerNode.keyFrames.count - 1; i >= 0; i--) {
                 lastFrameNode = layerNode.keyFrames[i];
