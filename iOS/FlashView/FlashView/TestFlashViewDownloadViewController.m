@@ -20,6 +20,7 @@
 @interface TestFlashViewDownloadViewController ()<FlashViewDownloadDelegate>
 @property (nonatomic, weak) UIActivityIndicatorView *loadingView;
 @property (nonatomic, weak) UILabel *loadingLabel;
+@property (nonatomic, unsafe_unretained) NSInteger nextIndex;
 @end
 
 @implementation TestFlashViewDownloadViewController
@@ -40,21 +41,34 @@
 -(void) testDownloader{
     FlashViewDownloader *downloader = [[FlashViewDownloader alloc] init];
     downloader.delegate = self;
+    __weak TestFlashViewDownloadViewController *weakCtl = self;
     [downloader downloadAnimFileWithUrl:@"https://github.com/hardman/OutLinkImages/raw/master/FlashAnimationToMobile/zips/heiniao.zip" saveFileName:@"heiniao.zip" animFlaName:@"heiniao" version:@"1" downType:ZIP percentCb:^(float per) {
         //do nothing
     } completeCb:^(BOOL succ) {
         if (succ) {
-            FlashViewNew *flashView = [[FlashViewNew alloc] initWithFlashName:@"heiniao"];
-            [self.view addSubview:flashView];
-            [flashView play:flashView.animNames[0] loopTimes:FlashLoopTimeOnce];
-            flashView.onEventBlock = ^(FlashViewEvent evt, id data){
-                
-            };
+            [weakCtl playFlashAnim];
             NSLog(@"动画下载成功并播放");
         }else{
             NSLog(@"下载动画后播放失败");
         }
     }];
+}
+
+-(void) playFlashAnim{
+    FlashViewNew *flashView = [[FlashViewNew alloc] initWithFlashName:@"heiniao"];
+    [self.view addSubview:flashView];
+    [flashView play:flashView.animNames[0] loopTimes:FlashLoopTimeOnce];
+    __weak FlashViewNew *weakFlashView = flashView;
+    __weak TestFlashViewDownloadViewController *weakCtl = self;
+    flashView.onEventBlock = ^(FlashViewEvent evt, id data){
+        if (evt == FlashViewEventStop) {
+            weakCtl.nextIndex++;
+            if (weakCtl.nextIndex >= flashView.animNames.count) {
+                weakCtl.nextIndex = 0;
+            }
+            [weakFlashView play:weakFlashView.animNames[weakCtl.nextIndex] loopTimes:FlashLoopTimeOnce];
+        }
+    };
 }
 
 #pragma mark FlashViewDownloadDelegate 自定义下载文件的函数，可以自己选择下载和解压文件的方法

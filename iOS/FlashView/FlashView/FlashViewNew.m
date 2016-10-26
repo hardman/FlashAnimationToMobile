@@ -281,6 +281,7 @@
             FlashViewLayerNode *layerNode = [[FlashViewLayerNode alloc] init];
             layerNode.index = layers.count - i;
             layerNode.tool = self.tool;
+            layerNode.animName = animNode.animName;
             [animNode addLayer:layerNode];
             for (NSDictionary *keyFrame in layer[@"frames"]) {
                 FlashViewFrameNode *frameNode = [[FlashViewFrameNode alloc] init];
@@ -364,6 +365,7 @@
             FlashViewLayerNode *layerNode = [[FlashViewLayerNode alloc] init];
             layerNode.index = layerCount - k;
             layerNode.tool = self.tool;
+            layerNode.animName = animNode.animName;
             [animNode addLayer:layerNode];
             NSInteger keyFrameCount = [dataReader readUShort];
             for (int l = 0; l < keyFrameCount; l++) {
@@ -524,17 +526,21 @@
 }
 
 //播放动画
--(void)play:(NSString *)animName loopTimes:(NSInteger)times{
+-(void)play:(NSString *)animName loopTimes:(NSUInteger)times{
     [self play:animName loopTimes:times fromIndex:0];
 }
 
 //播放动画
--(void)play:(NSString *)animName loopTimes:(NSInteger)times fromIndex:(NSInteger)from{
+-(void)play:(NSString *)animName loopTimes:(NSUInteger)times fromIndex:(NSInteger)from{
     [self play:animName loopTimes:times fromIndex:from toIndex:-1];
 }
 
 //播放动画
--(void) play:(NSString *) animName loopTimes:(NSInteger) loopTimes fromIndex:(NSInteger) fromIndex toIndex:(NSInteger) toIndex{
+-(void) play:(NSString *) animName loopTimes:(NSUInteger) loopTimes fromIndex:(NSInteger) fromIndex toIndex:(NSInteger) toIndex{
+    if (!animName || ![self.animNames containsObject:animName]) {
+        NSLog(@"[E] param animName(%@) is error in FlashView.play", animName);
+        return;
+    }
     if (!isPlaying) {
         [self.displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
     }
@@ -555,6 +561,8 @@
     
     [self onEvent:FlashViewEventStart data:nil];
     isPlaying = YES;
+    
+    self.tool.playingAnimName = animName;
 }
 
 //设置循环次数
@@ -583,7 +591,7 @@
 
 -(void) stopInner{
     //清除当前view
-    [mFlashViewNode.anims[mPlayingAnimName] onClean];
+    [mFlashViewNode.anims[mPlayingAnimName] removeLayers];
     
     isPlaying = NO;
     mPlayingAnimName = nil;
@@ -595,6 +603,8 @@
     mLastPlayIndex = -1;
     [self.displayLink invalidate];
     mDisplayLink = nil;
+    
+    self.tool.playingAnimName = nil;
 }
 
 //停止动画

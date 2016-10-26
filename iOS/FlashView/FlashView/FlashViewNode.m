@@ -272,6 +272,9 @@
     //为了不丢帧，绘制工作扔到主线程，用隐式动画可去除卡顿感
     __weak FlashViewLayerNode *layerNode = self;
     dispatch_async(dispatch_get_main_queue(), ^{
+        if (!layerNode.tool.playingAnimName || ![layerNode.animName isEqualToString:layerNode.tool.playingAnimName]) {
+            return;
+        }
         FlashViewFrameNode *frameNode = layerNode.frameDict[@(index)];
         if (frameNode && !frameNode.isEmpty) {
             [layerNode updateLayerViewWithFrameNode:frameNode isFirstFrame:(lastIndex > index)];

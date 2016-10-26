@@ -23,6 +23,9 @@
 //隐式动画时间，默认 1.0/30 s
 @property (nonatomic, unsafe_unretained) CGFloat implicitAnimDuration;
 
+//是否动画在运行
+@property (nonatomic, copy) NSString *playingAnimName;
+
 //增加图片
 -(void) addImage:(UIImage *)image withName:(NSString *)name;
 
