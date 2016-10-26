@@ -123,7 +123,7 @@
     
     mIsInitOk = YES;
     
-    [self setScaleMode:ScaleModeDefault andDesignResolution:CGSizeMake(640, 1136)];
+    [self setScaleMode:ScaleModeRespective andDesignResolution:CGSizeMake(640, 1136)];
     
     CGSize screenSize = [UIScreen mainScreen].bounds.size;
     self.frame = CGRectMake(0, 0, screenSize.width, screenSize.height);
@@ -163,8 +163,10 @@
             self.tool.scale = CGPointMake(hRate, hRate);
             break;
         case ScaleModeRespective:
-        case ScaleModeDefault:
             self.tool.scale = CGPointMake(wRate, hRate);
+            break;
+        case ScaleModeDefault:
+            self.tool.scale = CGPointMake(1, 1);
             break;
     }
 }
