@@ -99,28 +99,9 @@ static char *keynamefortest = 0;
         lastView = view;
     }
     
-    UIButton *closeAnimBtn = [[UIButton alloc] initWithFrame:CGRectMake(screenSize.width - 200, 100, 200, 100)];
-    [closeAnimBtn setTitle:@"关闭当前动画" forState:UIControlStateNormal];
-    [closeAnimBtn setTitleColor:[UIColor grayColor] forState:UIControlStateHighlighted];
-    [closeAnimBtn addTarget:self action:@selector(onClickCloseAnim) forControlEvents:UIControlEventTouchUpInside];
-    [self.view addSubview:closeAnimBtn];
-    
     sc.contentSize = CGSizeMake(screenSize.width, lastView.frame.origin.y + 50);
 }
 
--(void) onClickCloseAnim{
-    switch (self.testType) {
-        case TestTypeNewAnim:{
-            [self.flashViewNew removeFromSuperview];
-            self.flashViewNew = nil;
-        }
-            break;
-        case TestTypeOldAnim:{
-            [self.flashView removeFromSuperview];
-            self.flashView = nil;
-        }
-    }
-}
 
 -(void)clickOnAnimForTest:(UIGestureRecognizer*)gesture{
     NSString *name = objc_getAssociatedObject(gesture.view, &keynamefortest);
