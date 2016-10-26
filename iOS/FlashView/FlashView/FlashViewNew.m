@@ -66,9 +66,15 @@
 
 //构造方法：animDir为目录名，若动画存储在document中，目录名有效，默认值为 flashAnims
 -(instancetype) initWithFlashName:(NSString *)flashName andAnimDir:(NSString *)animDir{
+    return [self initWithFlashName:flashName andAnimDir:animDir scaleMode:ScaleModeRespective designResolution:CGSizeMake(640, 1136)];
+}
+
+//构造方法：animDir为目录名，若动画存储在document中，目录名有效，默认值为 flashAnims，ScaleMode为适配缩放模式，resolution为设计分辨率
+-(instancetype) initWithFlashName:(NSString *)flashName andAnimDir:(NSString *)animDir scaleMode:(ScaleMode)scaleMode designResolution:(CGSize)resolution{
     if (self = [super init]) {
         mFlashName = flashName;
         mFlashAnimDir = animDir;
+        [self setScaleMode:scaleMode andDesignResolution:resolution];
         if (![self innerInit]) {
             return nil;
         }
@@ -86,8 +92,6 @@
     mLoopTimes = 0;
     mTotalLoopTimes = 0;
     mLastPlayIndex = -1;
-    
-    [self setScaleMode:ScaleModeRespective andDesignResolution:CGSizeMake(640, 1136)];
     
     CGSize screenSize = [UIScreen mainScreen].bounds.size;
     self.frame = CGRectMake(0, 0, screenSize.width, screenSize.height);
@@ -468,7 +472,7 @@
     NSTimeInterval passedTime = currTime - mStartTimeMs;
     NSTimeInterval passedCount = passedTime / mFlashViewNode.oneFrameDurationMs;
     NSInteger animLen = mToIndex - mFromIndex + 1;
-    NSInteger currIndex = (NSInteger)passedCount % animLen;
+    NSInteger currIndex = mFromIndex + (NSInteger)passedCount % animLen;
     
     //播放
     if (currIndex != mLastPlayIndex) {
@@ -488,11 +492,12 @@
     FlashViewAnimNode *animNode = mFlashViewNode.anims[mPlayingAnimName];
     if (currIndex + 1 >= animNode.frameCount || currIndex < mLastPlayIndex) {
         mLoopTimes++;
-        [self onEvent:FlashViewEventOneLoopEnd data:@(mLoopTimes)];
         if (mTotalLoopTimes != FlashLoopTimeForever && mLoopTimes >= mTotalLoopTimes) {
             [self stop];
             return;
         }
+        
+        [self onEvent:FlashViewEventOneLoopEnd data:@(mLoopTimes)];
         
         //结束后移除所有sublayer，防止重播时，首尾帧不在相同位置出现的闪烁情况。
         [self resetLayers];
@@ -574,6 +579,10 @@
 
 //像图片一样显示动画的某一帧内容
 -(void)stopAtFrameIndex:(NSInteger)frameIndex animName:(NSString *)animName{
+    if (isPlaying) {
+        [self stop];
+    }
+    self.tool.playingAnimName = animName;
     FlashViewAnimNode *animNode = mFlashViewNode.anims[animName];
     if (animNode && frameIndex >= 0 && frameIndex < animNode.frameCount) {
         [animNode updateToIndex:frameIndex lastIndex:-1];

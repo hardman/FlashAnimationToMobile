@@ -9,6 +9,8 @@
 
 @interface FlashViewNew : UIControl
 //构造器
+-(instancetype) initWithFlashName:(NSString *)flashName andAnimDir:(NSString *)animDir scaleMode:(ScaleMode)scaleMode designResolution:(CGSize)resolution;
+//构造器
 -(instancetype) initWithFlashName:(NSString *)flashName andAnimDir:(NSString *)animDir;
 //构造器
 -(instancetype) initWithFlashName:(NSString *)flashName;
@@ -24,12 +26,6 @@
 
 //是否启用隐式动画
 -(void) setUseImplicitAnim:(BOOL) isUseImplicitAnim;
-
-//设置缩放类型
--(void) setScaleMode:(ScaleMode)mode andDesignResolution:(CGSize)resolution;
-
-//直接设置缩放比例数值
--(void) setScaleWithX:(CGFloat)x y:(CGFloat) y isDesignResolutionEffect:(BOOL)isDREffect;
 
 //获取动画名称
 -(NSArray *)animNames;
