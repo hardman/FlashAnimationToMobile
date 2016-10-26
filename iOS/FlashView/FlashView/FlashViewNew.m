@@ -17,29 +17,43 @@
     NSString *mFlashName;
     //如果动画在Document里面，该文件的目录名
     NSString *mFlashAnimDir;
+    //系统文件管理
     NSFileManager *mFileManager;
+    //main bundle
     NSBundle *mMainBundle;
+    //可写目录
     NSString *mWritablePath;
+    //数据格式：json还是bin
     FlashFileDataType mFileDataType;
+    //文件位置：在Bundle（Resource）还是在Document中
     FlashFileType mFileType;
     
-    //数据
+    //动画数据
     FlashViewNode *mFlashViewNode;
     
+    //计时器
     CADisplayLink *mDisplayLink;
+    //动画是否在播放
     BOOL isPlaying;
     
+    //动画开始时间（毫秒）
     NSInteger mStartTimeMs;
+    //动画上一帧播放时间（毫秒）
     NSInteger mLastFrameTimeMs;
     
+    //当前动画起始帧
     NSInteger mFromIndex;
+    //当前动画结束帧
     NSInteger mToIndex;
     
+    //当前动画已循环次数
     NSInteger mLoopTimes;
+    //当前动画循环次数限制
     NSInteger mTotalLoopTimes;
     
+    //当前动画上一次循环播放哪一帧
     NSInteger mLastPlayIndex;
-    NSTimeInterval mLastPlayTime;
+    //当前播放的动画名称
     NSString *mPlayingAnimName;
     
     BOOL mIsInitOk;
@@ -71,7 +85,7 @@
     mToIndex = 0;
     mLoopTimes = 0;
     mTotalLoopTimes = 0;
-    mLastPlayIndex = -1;
+    mLastPlayIndex = 0;
     
     mFileManager = [NSFileManager defaultManager];
     mMainBundle = [NSBundle mainBundle];
@@ -422,12 +436,17 @@
 
 //触发事件
 -(void) triggerEventWithCurrTime:(NSTimeInterval) currTime{
-    if (!isPlaying || mLastPlayIndex <= 0) {
+    if (!isPlaying) {
         return;
     }
     
-    //从上次updateAnim:之后，过了几帧，每一帧都要检查是否有事件，算当前的帧，如果上一帧是5，当前帧是6，则passedFrames 为1.
-    NSInteger passedFrames = floor((currTime - mLastPlayTime) / mFlashViewNode.oneFrameDurationMs) + 1;
+    //自上次循环结束到现在，应该播放多少帧
+    NSInteger passedFrames = floor((currTime - mLastFrameTimeMs) / mFlashViewNode.oneFrameDurationMs);
+    if (passedFrames == 0) {
+        return;
+    }
+    
+    //从上次updateAnim:之后，过了几帧，每一帧都要检查是否有事件，算当前的帧，如果上一帧是5，当前帧是6，则 循环次数为1.
     for (NSInteger i = 0; i < passedFrames; i++) {
         NSInteger frameIndex = mLastPlayIndex + 1 + i;
         if (frameIndex > mToIndex) {
@@ -437,7 +456,7 @@
     }
 }
 
-//计时调用函数
+//动画主循环函数
 -(void) updateAnim:(CADisplayLink *)displayLink{
     NSTimeInterval currTime = self.currentTimeMs;
     NSTimeInterval passedTime = currTime - mStartTimeMs;
@@ -471,9 +490,10 @@
     mLastPlayIndex = currIndex;
     //向前对齐
     if (passedCount != (NSInteger) passedCount) {
-        currTime = ceil(passedCount) * mFlashViewNode.oneFrameDurationMs + mStartTimeMs;
+        mLastFrameTimeMs = floor(passedCount) * mFlashViewNode.oneFrameDurationMs + mStartTimeMs;
+    }else{
+        mLastFrameTimeMs = currTime;
     }
-    mLastPlayTime = currTime;
 }
 
 //计时器
@@ -514,6 +534,7 @@
     mLoopTimes = 0;
     [self.displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
     mStartTimeMs = self.currentTimeMs;
+    mLastFrameTimeMs = mStartTimeMs;
     
     [self onEvent:FlashViewEventStart data:nil];
 }
@@ -551,7 +572,7 @@
     mToIndex = 0;
     mLoopTimes = 0;
     mTotalLoopTimes = 0;
-    mLastPlayIndex = -1;
+    mLastPlayIndex = 0;
     [self.displayLink invalidate];
     mDisplayLink = nil;
     [self onEvent:FlashViewEventStop data:nil];
