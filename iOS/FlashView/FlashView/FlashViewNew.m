@@ -499,14 +499,14 @@
     }
     isPlaying = YES;
     mPlayingAnimName = animName;
-    NSInteger maxIndex = mFlashViewNode.anims[mPlayingAnimName].frameCount;
+    NSInteger maxIndex = mFlashViewNode.anims[mPlayingAnimName].frameCount - 1;
     mFromIndex = fromIndex;
-    if (mFromIndex < 0 || mFromIndex >= maxIndex) {
+    if (mFromIndex < 0 || mFromIndex > maxIndex) {
         mFromIndex = 0;
     }
     mToIndex = toIndex;
-    if (mToIndex < 0 || mToIndex >= maxIndex) {
-        mToIndex = maxIndex - 1;
+    if (mToIndex < 0 || mToIndex > maxIndex) {
+        mToIndex = maxIndex;
     }
     mTotalLoopTimes = loopTimes;
     mLoopTimes = 0;
@@ -571,6 +571,19 @@
         return NO;
     }
     return YES;
+}
+
+//view被移除后，关闭定时器。
+-(void)willMoveToWindow:(UIWindow *)newWindow{
+    if (!newWindow) {
+        if (isPlaying) {
+            [self.displayLink invalidate];
+        }
+    }else{
+        if (isPlaying) {
+            [self.displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
+        }
+    }
 }
 
 @end

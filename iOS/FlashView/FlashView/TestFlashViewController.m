@@ -33,7 +33,7 @@
 }
 
 -(void) testFlashViewNew{
-    FlashViewNew *flashViewNew = [[FlashViewNew alloc] initWithFlashName:@"laba"];
+    FlashViewNew *flashViewNew = [[FlashViewNew alloc] initWithFlashName:@"bieshu"];
     flashViewNew.frame = self.view.frame;
     [self.view addSubview:flashViewNew];
     [flashViewNew play:flashViewNew.animNames.firstObject loopTimes:FlashLoopTimeForever];
@@ -42,7 +42,7 @@
 }
 
 -(void) testFlashView{
-    FlashView *flashView = [[FlashView alloc] initWithFlashName:@"laba"];
+    FlashView *flashView = [[FlashView alloc] initWithFlashName:@"bieshu"];
     flashView.frame = self.view.frame;// CGRectMake(100, 100, 200, 500);
     flashView.backgroundColor = [UIColor clearColor];
     [self.view addSubview:flashView];
@@ -66,6 +66,16 @@
     [flashView reload:@"testDB" andAnimDir:nil];
     [flashView play:@"applanbo" loopTimes:FlashLoopTimeForever];
     [self performSelector:@selector(reload:) withObject:flashView afterDelay:3];
+}
+
+-(void)willMoveToParentViewController:(UIViewController *)parent{
+    if (!parent) {
+        [self.class cancelPreviousPerformRequestsWithTarget:self];
+    }
+}
+
+-(void)dealloc{
+    NSLog(@"dealloc for TestFlashViewController");
 }
 
 
