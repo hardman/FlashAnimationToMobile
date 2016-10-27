@@ -20,7 +20,7 @@
 //是否开启隐式动画，默认打开，动画效果会比较丝滑。如果感觉动画效果不对，可以关闭。
 @property (nonatomic, unsafe_unretained) BOOL isUseImplicitAnim;
 
-//隐式动画时间，默认 1.0/30 s
+//隐式动画时间，默认 1.0/30 s，将这个值变的越大动画效果会越丝滑，但是动画可能有变形。这个具体根据自己需要设置。
 @property (nonatomic, unsafe_unretained) CGFloat implicitAnimDuration;
 
 //是否动画在运行
