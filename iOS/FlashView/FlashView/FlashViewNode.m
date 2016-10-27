@@ -13,9 +13,9 @@
 @implementation FlashViewBaseNode
 -(void) updateToIndex:(NSInteger)index lastIndex:(NSInteger) lastIndex{}
 -(void) trigerEventWithIndex:(NSInteger)index delegate:(id<FlashViewDelegate>)delegate{}
+-(void) updateTransform{}
 -(void) onReady{}
 -(void) onClean{}
-
 -(void)dealloc{
     [self onClean];
 }
@@ -24,7 +24,7 @@
 //帧数据
 @implementation FlashViewFrameNode
 
--(void) refresTransformValueWithScaleX:(CGFloat) scaleX scaleY:(CGFloat) scaleY{
+-(void) refreshTransformValueWithScaleX:(CGFloat) scaleX scaleY:(CGFloat) scaleY{
     CGAffineTransform transform = CGAffineTransformIdentity;
     //旋转
     if(self.skewX == self.skewY){
@@ -56,6 +56,10 @@
     transform.ty = -self.y * scaleY;
     
     self.transformValue = [NSValue valueWithCGAffineTransform:transform];
+}
+
+-(void)updateTransform{
+    self.transformValue = nil;
 }
 @end
 
@@ -196,7 +200,7 @@
             
             //预先计算transform。 没必要这样做。
             if (!targetFrameNode.transformValue) {
-                [targetFrameNode refresTransformValueWithScaleX:self.tool.scale.x scaleY:self.tool.scale.y];
+                [targetFrameNode refreshTransformValueWithScaleX:self.tool.scale.x scaleY:self.tool.scale.y];
             }
         }
         
@@ -236,6 +240,9 @@
         self.imageName = frameNode.imageName;
     }
     
+    if (!frameNode.transformValue) {
+        [frameNode refreshTransformValueWithScaleX:self.tool.scale.x scaleY:self.tool.scale.y];
+    }
     //变换
     layer.affineTransform = [frameNode.transformValue CGAffineTransformValue];
     
@@ -320,6 +327,13 @@
     }
     return _keyFrames;
 }
+
+-(void)updateTransform{
+    for (id key in self.frameDict) {
+        [self.frameDict[key] updateTransform];
+    }
+}
+
 @end
 
 //单个动画数据
@@ -373,6 +387,12 @@
     }
 }
 
+-(void)updateTransform{
+    for (FlashViewLayerNode *layerNode in self.layers) {
+        [layerNode updateTransform];
+    }
+}
+
 @end
 
 //所有动画
@@ -406,6 +426,13 @@
         _anims = [[NSMutableDictionary alloc] init];
     }
     return _anims;
+}
+
+-(void) updateTransform{
+    for (NSString *animName in self.anims) {
+        FlashViewAnimNode *animNode = self.anims[animName];
+        [animNode updateTransform];
+    }
 }
 
 @end

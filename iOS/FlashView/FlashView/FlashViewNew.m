@@ -175,16 +175,16 @@
     CGFloat hRate = screenSize.height / resolution.height;
     switch (mode) {
         case ScaleModeWidthFit:
-            self.tool.scale = CGPointMake(wRate, wRate);
+            [self setScaleWithX:wRate y:wRate isDesignResolutionEffect:NO];
             break;
         case ScaleModeHeightFit:
-            self.tool.scale = CGPointMake(hRate, hRate);
+            [self setScaleWithX:hRate y:hRate isDesignResolutionEffect:NO];
             break;
         case ScaleModeRespective:
-            self.tool.scale = CGPointMake(wRate, hRate);
+            [self setScaleWithX:wRate y:hRate isDesignResolutionEffect:NO];
             break;
         case ScaleModeDefault:
-            self.tool.scale = CGPointMake(1, 1);
+            [self setScaleWithX:1 y:1 isDesignResolutionEffect:NO];
             break;
     }
 }
@@ -195,6 +195,10 @@
         self.tool.scale = CGPointMake(self.tool.scale.x * x, self.tool.scale.y * y);
     }else{
         self.tool.scale = CGPointMake(x, y);
+    }
+    
+    if (self.isInitOk) {
+        [mFlashViewNode updateTransform];
     }
 }
 

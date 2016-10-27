@@ -12,6 +12,8 @@
 @interface FlashViewBaseNode: NSObject
 //刷新到第几帧
 -(void) updateToIndex:(NSInteger) index lastIndex:(NSInteger) lastIndex;
+//当因为某些原因，需要改变显示元素属性（位置大小形状等）变化时调用
+-(void) updateTransform;
 //触发回调事件
 -(void) trigerEventWithIndex:(NSInteger)index delegate:(id<FlashViewDelegate>)delegate;
 //数据初始化完成
