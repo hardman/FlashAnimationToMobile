@@ -27,6 +27,8 @@ static char *keynamefortest = 0;
 
 @property (nonatomic, copy) NSString * currAnim;
 
+@property (nonatomic, unsafe_unretained) NSInteger loopTimes;
+
 @end
 
 @implementation TestFlashViewController
@@ -34,7 +36,7 @@ static char *keynamefortest = 0;
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     self.view.backgroundColor = [UIColor whiteColor];
-    
+    self.loopTimes = FlashLoopTimeOnce;
     [self buildTestFlashView];
 }
 
@@ -122,7 +124,7 @@ static char *keynamefortest = 0;
             if (anims.count == 0) {
                 return;
             }
-            [self.flashViewNew play:anims[self.currAnimIndex] loopTimes:FlashLoopTimeOnce];
+            [self.flashViewNew play:anims[self.currAnimIndex] loopTimes:self.loopTimes];
             
             __weak TestFlashViewController *weakCtl = self;
             __weak FlashViewNew *weakFlashView = self.flashViewNew;
@@ -153,7 +155,7 @@ static char *keynamefortest = 0;
             if (anims.count == 0) {
                 return;
             }
-            [self.flashView play:anims[self.currAnimIndex] loopTimes:FlashLoopTimeOnce];
+            [self.flashView play:anims[self.currAnimIndex] loopTimes:self.loopTimes];
             
             __weak TestFlashViewController *weakCtl = self;
             __weak FlashView *weakFlashView = self.flashView;
