@@ -41,6 +41,9 @@
     //动画上一帧播放时间（毫秒）
     NSInteger mLastFrameTimeMs;
     
+    //上次更新LoopTime帧数
+    NSInteger mLastUpdateLoopTimeMs;
+    
     //当前动画起始帧
     NSInteger mFromIndex;
     //当前动画结束帧
@@ -92,6 +95,7 @@
     mLoopTimes = 0;
     mTotalLoopTimes = 0;
     mLastPlayIndex = -1;
+    mLastUpdateLoopTimeMs = -1;
     
     CGSize screenSize = [UIScreen mainScreen].bounds.size;
     self.frame = CGRectMake(0, 0, screenSize.width, screenSize.height);
@@ -497,18 +501,21 @@
     [self triggerEventWithCurrTime:currTime];
     
     //判断结束事件
-    FlashViewAnimNode *animNode = mFlashViewNode.anims[mPlayingAnimName];
-    if (currIndex + 1 >= animNode.frameCount || currIndex < mLastPlayIndex) {
-        mLoopTimes++;
-        if (mTotalLoopTimes != FlashLoopTimeForever && mLoopTimes >= mTotalLoopTimes) {
-            [self stop];
-            return;
+    if (currIndex != mLastPlayIndex && (mLastUpdateLoopTimeMs < 0 || currTime - mLastUpdateLoopTimeMs >= mFlashViewNode.oneFrameDurationMs * (animLen - 1))) {
+        FlashViewAnimNode *animNode = mFlashViewNode.anims[mPlayingAnimName];
+        if (currIndex + 1 >= animNode.frameCount || currIndex < mLastPlayIndex) {
+            mLoopTimes++;
+            mLastUpdateLoopTimeMs = currTime;
+            if (mTotalLoopTimes != FlashLoopTimeForever && mLoopTimes >= mTotalLoopTimes) {
+                [self stop];
+                return;
+            }
+            
+            [self onEvent:FlashViewEventOneLoopEnd data:@(mLoopTimes)];
+            
+            //结束后移除所有sublayer，防止重播时，首尾帧不在相同位置出现的闪烁情况。
+            [self resetLayers];
         }
-        
-        [self onEvent:FlashViewEventOneLoopEnd data:@(mLoopTimes)];
-        
-        //结束后移除所有sublayer，防止重播时，首尾帧不在相同位置出现的闪烁情况。
-        [self resetLayers];
     }
     
     //重置状态
@@ -571,6 +578,7 @@
     mLoopTimes = 0;
     mStartTimeMs = self.currentTimeMs;
     mLastFrameTimeMs = mStartTimeMs;
+    mLastUpdateLoopTimeMs = -1;
     
     [self onEvent:FlashViewEventStart data:nil];
     isPlaying = YES;
@@ -618,6 +626,7 @@
     mLoopTimes = 0;
     mTotalLoopTimes = 0;
     mLastPlayIndex = -1;
+    mLastUpdateLoopTimeMs = -1;
     [self.displayLink invalidate];
     mDisplayLink = nil;
     

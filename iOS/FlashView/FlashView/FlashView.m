@@ -67,6 +67,9 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
     //上一帧
     NSInteger mLastFrameIndex;
     
+    //上次更新LoopTime帧数
+    NSInteger mLastUpdateLoopTimeSec;
+    
     //当前动画播放起始／结束帧
     NSInteger mFromIndex;
     NSInteger mToIndex;
@@ -285,6 +288,7 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
     mRunningAnimName = animName;
     mSetLoopTimes = times;
     mLoopTimes = 0;
+    mLastUpdateLoopTimeSec = -1;
     mFromIndex = from;
     mToIndex = to;
     if (self.delegate) {
@@ -414,6 +418,7 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
     mLastFrameIndex = -1;
     
     mLastUpdateTime = -1;
+    mLastUpdateLoopTimeSec = -1;
 }
 
 //暂停
@@ -806,7 +811,7 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
     }
     
     //防止动画停止前多播放了一帧。此处为临时修改，正确方法应该先判断动画完成事件，然后再drawIamge。
-    if (mSetLoopTimes == FlashLoopTimeForever || (mLoopTimes == mSetLoopTimes - 1 && mLastFrameIndex <= frameIndex)) {
+    if (mSetLoopTimes == FlashLoopTimeForever || mLoopTimes < mSetLoopTimes || (mLoopTimes == mSetLoopTimes - 1 && mLastFrameIndex <= frameIndex)) {
         NSDictionary *animDict = [mParsedData objectForKey:animName];
         
         NSArray *frameArray = [animDict objectForKey:@(frameIndex)];
@@ -847,25 +852,29 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
     }
     if (isTriggerEvent) {
         NSInteger animLen = mToIndex - mFromIndex;
-        if (frameIndex == animLen - 1 || mLastFrameIndex > frameIndex) {
-            if (self.delegate) {
-                [self.delegate onEvent:FlashViewEventOneLoopEnd data:@(mLoopTimes)];
-            }
-            if (self.onEventBlock) {
-                [self performSelectorOnMainThread:@selector(onEventOnMainThread:) withObject:@{@"event": @(FlashViewEventOneLoopEnd), @"data":@(mLoopTimes)} waitUntilDone:NO];
-            }
-            if (mSetLoopTimes >= FlashLoopTimeOnce) {
-                if (++mLoopTimes >= mSetLoopTimes) {
-                    if (self.delegate) {
-                        [self.delegate onEvent:FlashViewEventStop data:nil];
-                    }
-                    if (self.onEventBlock) {
-                        [self performSelectorOnMainThread:@selector(onEventOnMainThread:) withObject:@{@"event": @(FlashViewEventStop)} waitUntilDone:NO];
-                    }
-                    [self stop];
+        NSTimeInterval currTime = self.currentTime;
+        if (mCurrFrameIndex != mLastFrameIndex && (mLastUpdateLoopTimeSec < 0 || currTime - mLastUpdateLoopTimeSec >= mOneFrameTime * (animLen - 1))) {
+            if (frameIndex == animLen - 1 || mLastFrameIndex > frameIndex) {
+                if (self.delegate) {
+                    [self.delegate onEvent:FlashViewEventOneLoopEnd data:@(mLoopTimes)];
                 }
+                if (self.onEventBlock) {
+                    [self performSelectorOnMainThread:@selector(onEventOnMainThread:) withObject:@{@"event": @(FlashViewEventOneLoopEnd), @"data":@(mLoopTimes)} waitUntilDone:NO];
+                }
+                if (mSetLoopTimes >= FlashLoopTimeOnce) {
+                    if (++mLoopTimes >= mSetLoopTimes) {
+                        if (self.delegate) {
+                            [self.delegate onEvent:FlashViewEventStop data:nil];
+                        }
+                        if (self.onEventBlock) {
+                            [self performSelectorOnMainThread:@selector(onEventOnMainThread:) withObject:@{@"event": @(FlashViewEventStop)} waitUntilDone:NO];
+                        }
+                        [self stop];
+                    }
+                    mLastUpdateLoopTimeSec = currTime;
+                }
+                mCurrFrameIndex = mFromIndex;
             }
-            mCurrFrameIndex = mFromIndex;
         }
         mLastFrameIndex = frameIndex;
     }
