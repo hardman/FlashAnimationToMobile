@@ -82,7 +82,11 @@
 
 //将layer移动至首帧，并从superlayer上移除。
 -(void)resetLayer{
-    _layer.affineTransform = [self.frameDict[@(self.keyFrames.firstObject.frameIndex)].transformValue CGAffineTransformValue];
+    CATransform3D transform3D = CATransform3DMakeAffineTransform([self.frameDict[@(self.keyFrames.firstObject.frameIndex)].transformValue CGAffineTransformValue]);
+    transform3D.m43 = self.index;
+    //变换
+    _layer.transform = transform3D;
+    //    _layer.affineTransform = [self.frameDict[@(self.keyFrames.firstObject.frameIndex)].transformValue CGAffineTransformValue];
 }
 
 //计算出每一帧的数据(位置，大小等信息)
@@ -243,8 +247,12 @@
     if (!frameNode.transformValue) {
         [frameNode refreshTransformValueWithScaleX:self.tool.scale.x scaleY:self.tool.scale.y];
     }
+    
+    CATransform3D transform3D = CATransform3DMakeAffineTransform([frameNode.transformValue CGAffineTransformValue]);
+    transform3D.m43 = self.index;
     //变换
-    layer.affineTransform = [frameNode.transformValue CGAffineTransformValue];
+    layer.transform = transform3D;
+    //    layer.affineTransform = [frameNode.transformValue CGAffineTransformValue];
     
     //透明度
     layer.opacity = frameNode.alpha / 255;
