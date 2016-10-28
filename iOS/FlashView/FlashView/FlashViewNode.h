@@ -60,7 +60,7 @@
 //层数据：绘制工作和主要逻辑都在这里
 @interface FlashViewLayerNode : FlashViewBaseNode
 //层所属的动画名
-@property (nonatomic, weak) NSString *animName;
+@property (nonatomic, copy) NSString *animName;
 //配置
 @property (nonatomic, weak) FlashViewTool *tool;
 //当前层显示的图片名字
