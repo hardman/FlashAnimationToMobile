@@ -650,9 +650,6 @@
             }
             
             [self onEvent:FlashViewEventOneLoopEnd data:@(mLoopTimes)];
-            
-            //结束后移除所有sublayer，防止重播时，首尾帧不在相同位置出现的闪烁情况。
-            [self resetLayers];
         }
     }
     
@@ -664,13 +661,6 @@
     }else{
         mLastFrameTimeMs = currTime;
     }
-}
-
--(void) resetLayers{
-    [CATransaction begin];
-    [CATransaction setDisableActions:YES];
-    [mFlashViewNode.anims[mPlayingAnimName] resetLayer];
-    [CATransaction commit];
 }
 
 //计时器
