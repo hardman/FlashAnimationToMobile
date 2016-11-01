@@ -340,6 +340,28 @@
     }
 }
 
+-(void)setDesignScreenOrientation:(FlashViewScreenOrientation)designScreenOrientation{
+    if (_designScreenOrientation == designScreenOrientation) {
+        return;
+    }
+    _designScreenOrientation = designScreenOrientation;
+    
+    if (designScreenOrientation != FlashViewScreenOrientationNone) {
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reloadScreenOrientation) name:UIDeviceOrientationDidChangeNotification object:nil];
+    }else{
+        [[NSNotificationCenter defaultCenter] removeObserver:self];
+    }
+}
+
+-(void) reloadScreenOrientation{
+    UIInterfaceOrientation toInterfaceOrientation = (UIInterfaceOrientation)[UIDevice currentDevice].orientation;
+    if (UIInterfaceOrientationIsPortrait(toInterfaceOrientation)) {
+        self.screenOrientation = FlashViewScreenOrientationVer;
+    }else if(UIInterfaceOrientationIsLandscape(toInterfaceOrientation)){
+        self.screenOrientation = FlashViewScreenOrientationHor;
+    }
+}
+
 //以二进制方式读取文件数据
 -(NSData *)readData{
     NSData *data = nil;
@@ -815,6 +837,8 @@
         if (isPlaying) {
             [self.displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
         }
+        
+        [self reloadScreenOrientation];
     }
 }
 
@@ -849,6 +873,10 @@
 //根据图片名获取动画图片
 -(UIImage *) animImageWithName:(NSString *)name{
     return [self.tool imageWithName:name];
+}
+
+-(void)dealloc{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 @end
