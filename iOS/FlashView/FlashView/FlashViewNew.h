@@ -9,7 +9,7 @@
 
 @interface FlashViewNew : UIControl
 //构造器
--(instancetype) initWithFlashName:(NSString *)flashName andAnimDir:(NSString *)animDir scaleMode:(ScaleMode)scaleMode designResolution:(CGSize)resolution;
+-(instancetype) initWithFlashName:(NSString *)flashName andAnimDir:(NSString *)animDir scaleMode:(FlashViewScaleMode)scaleMode designResolution:(CGSize)resolution designScreenOrientation:(FlashViewScreenOrientation) designScreenOrientation;
 //构造器
 -(instancetype) initWithFlashName:(NSString *)flashName andAnimDir:(NSString *)animDir;
 //构造器
@@ -23,6 +23,32 @@
 
 //运行模式，在主线程还是，后台线程运行
 @property (nonatomic, unsafe_unretained) FlashViewRunMode runMode;
+
+//隐式动画时间倍数，默认为1，适当增大此值，能够令动画变得更加流畅。但是，如果值设置过大，可能会令动画变形(丢失细节)。请根据具体情况设置。
+@property (nonatomic, unsafe_unretained) CGFloat implicitAnimDurationScale;
+
+// ==== 横屏适配 ====
+/**
+ *  下面4个变量用于横屏适配。
+ *  未开启横屏适配时，动画会根据当前屏幕方向，调整View的尺寸，并根据设置的ScaleMode 进行自动动画适配。
+ *  开启横屏适配后，动画不根据系统屏幕方向自动适配。通过下列4个变量进行适配。其中：
+ *  designScreenOrientation：表示是否开启横屏适配，设为FlashViewScreenOrientationNone表示不开启。其他两个枚举表示美术设计时是按照横屏还是竖屏。
+ *  screenOrientation: 当前屏幕方向，自己根据需求设置。如果为 FlashViewScreenOrientationNone，表示不适配。
+ *  animPosMask：表示动画主体位置，动画主要展示的位置。如果是普通动画一般都是HorCenter|VerCenter，如果是屏幕上方的提示条幅一般是 VerTop|HorCenter。
+ *  animOffset：表示动画偏移位置，上面3个变量最终影响的就是此值。程序最终会根据这个值进行最后的位置适配。所以特别情况也可以直接设置此值。
+ */
+//动画位置
+@property (nonatomic, unsafe_unretained) FlashViewAnimPosMask animPosMask;
+
+//屏幕方向
+@property (nonatomic, unsafe_unretained) FlashViewScreenOrientation screenOrientation;
+
+//设计屏幕方向，若不设置，表示不调整动画位置，根据系统屏幕方向计算位置。
+@property (nonatomic, unsafe_unretained) FlashViewScreenOrientation designScreenOrientation;
+
+//动画偏移量
+@property (nonatomic, unsafe_unretained) CGPoint animOffset;
+// ==== 横屏适配 ====
 
 //是否启用隐式动画
 -(void) setUseImplicitAnim:(BOOL) isUseImplicitAnim;
@@ -64,7 +90,7 @@
 -(BOOL) reload:(NSString *)flashName andAnimDir:(NSString *)animDir;
 
 //重新加载一个新的动画文件
--(BOOL) reload:(NSString *)flashName andAnimDir:(NSString *)animDir scaleMode:(ScaleMode)scaleMode designResolution:(CGSize)resolution;
+-(BOOL) reload:(NSString *)flashName andAnimDir:(NSString *)animDir scaleMode:(FlashViewScaleMode)scaleMode designResolution:(CGSize)resolution;
 
 //判断动画是否存在
 +(BOOL) isAnimExist:(NSString *)flashName;

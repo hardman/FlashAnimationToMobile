@@ -36,7 +36,7 @@ static char *keynamefortest = 0;
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     self.view.backgroundColor = [UIColor whiteColor];
-    self.loopTimes = FlashLoopTimeOnce;
+    self.loopTimes = FlashViewLoopTimeOnce;
     [self buildTestFlashView];
 }
 
@@ -51,6 +51,9 @@ static char *keynamefortest = 0;
 -(FlashViewNew *)flashViewNew{
     if (!_flashViewNew) {
         _flashViewNew = [[FlashViewNew alloc] init];
+        _flashViewNew.designScreenOrientation = FlashViewScreenOrientationVer;
+        _flashViewNew.screenOrientation = FlashViewScreenOrientationHor;
+        _flashViewNew.animPosMask = FlashViewAnimPosMaskVerCenter | FlashViewAnimPosMaskHorCenter;
         [self.view addSubview:_flashViewNew];
     }
     return _flashViewNew;
@@ -186,5 +189,37 @@ static char *keynamefortest = 0;
     NSLog(@"dealloc for TestFlashViewController");
 }
 
+#pragma mark 屏幕旋转
+- (BOOL) shouldAutorotate{
+    return YES;
+}
+
+- (UIInterfaceOrientation)preferredInterfaceOrientationForPresentation {
+    return (UIInterfaceOrientation)[UIDevice currentDevice].orientation;
+}
+
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
+    return UIInterfaceOrientationMaskAll;
+}
+
+- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
+    if (UIInterfaceOrientationIsPortrait(toInterfaceOrientation)) {
+        self.flashViewNew.screenOrientation = FlashViewScreenOrientationVer;
+    }else if(UIInterfaceOrientationIsLandscape(toInterfaceOrientation)){
+        self.flashViewNew.screenOrientation = FlashViewScreenOrientationHor;
+    }
+}
+
+- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
+}
+
+-(void)viewWillAppear:(BOOL)animated{
+    UIInterfaceOrientation toInterfaceOrientation = (UIInterfaceOrientation)[UIDevice currentDevice].orientation;
+    if (UIInterfaceOrientationIsPortrait(toInterfaceOrientation)) {
+        self.flashViewNew.screenOrientation = FlashViewScreenOrientationVer;
+    }else if(UIInterfaceOrientationIsLandscape(toInterfaceOrientation)){
+        self.flashViewNew.screenOrientation = FlashViewScreenOrientationHor;
+    }
+}
 
 @end

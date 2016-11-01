@@ -49,7 +49,7 @@
 -(instancetype) initWithFlashName:(NSString *)flashName;
 
 //设置缩放类型
--(void) setScaleMode:(ScaleMode)mode andDesignResolution:(CGSize)resolution;
+-(void) setScaleMode:(FlashViewScaleMode)mode andDesignResolution:(CGSize)resolution;
 
 //直接设置缩放比例数值
 -(void) setScaleWithX:(CGFloat)x y:(CGFloat) y isDesignResolutionEffect:(BOOL)isDREffect;

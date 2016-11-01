@@ -24,7 +24,7 @@
 //帧数据
 @implementation FlashViewFrameNode
 
--(void) refreshTransformValueWithScaleX:(CGFloat) scaleX scaleY:(CGFloat) scaleY{
+-(void) refreshTransformValueWithScaleX:(CGFloat) scaleX scaleY:(CGFloat) scaleY animOffX:(CGFloat)animOffX animOffY:(CGFloat)animOffY{
     CGAffineTransform transform = CGAffineTransformIdentity;
     //旋转
     if(self.skewX == self.skewY){
@@ -52,8 +52,8 @@
     transform = CGAffineTransformScale(transform, self.scaleX, self.scaleY);
     
     //平移
-    transform.tx = self.x * scaleX;
-    transform.ty = -self.y * scaleY;
+    transform.tx = self.x * scaleX + animOffX;
+    transform.ty = -self.y * scaleY + animOffY;
     
     self.transformValue = [NSValue valueWithCGAffineTransform:transform];
 }
@@ -70,6 +70,7 @@
 @property (nonatomic, strong) CALayer *maskLayer;
 @property (nonatomic, strong) NSMutableArray<FlashViewFrameNode *> *keyFrames;
 @property (nonatomic, strong) NSMutableDictionary<NSNumber *, FlashViewFrameNode *> *frameDict;
+@property (nonatomic, unsafe_unretained) NSInteger currIndex;
 @end
 
 @implementation FlashViewLayerNode
@@ -82,11 +83,23 @@
 
 //将layer移动至首帧，并从superlayer上移除。
 -(void)resetLayer{
-    CATransform3D transform3D = CATransform3DMakeAffineTransform([self.frameDict[@(self.keyFrames.firstObject.frameIndex)].transformValue CGAffineTransformValue]);
-    transform3D.m43 = self.index;
-    //变换
-    _layer.transform = transform3D;
-    //    _layer.affineTransform = [self.frameDict[@(self.keyFrames.firstObject.frameIndex)].transformValue CGAffineTransformValue];
+    __weak FlashViewLayerNode *layerNode = self;
+    [self.tool.workQueue addOperationWithBlock:^{
+        dispatch_async(dispatch_get_main_queue(), ^{
+            if (layerNode.keyFrames.count > 0) {
+                //查找第一个非空关键帧
+                NSInteger frameIndex = 0;
+                FlashViewFrameNode *frameNode = nil;
+                do {
+                    frameNode = layerNode.keyFrames[frameIndex++];
+                }while (frameNode.isEmpty && frameIndex < layerNode.keyFrames.count);
+                
+                [layerNode updateLayerViewWithFrameNode:frameNode isFirstFrame:YES];
+            }
+            
+            //            NSLog(@"reset layer(%ld) to scalex=%f, scaley=%f", self.index, _layer.transform.m11, _layer.transform.m22);
+        });
+    }];
 }
 
 //计算出每一帧的数据(位置，大小等信息)
@@ -204,7 +217,7 @@
             
             //预先计算transform。 没必要这样做。
             if (!targetFrameNode.transformValue) {
-                [targetFrameNode refreshTransformValueWithScaleX:self.tool.scale.x scaleY:self.tool.scale.y];
+                [targetFrameNode refreshTransformValueWithScaleX:self.tool.scale.x scaleY:self.tool.scale.y animOffX:self.tool.animOffset.x animOffY:self.tool.animOffset.y];
             }
         }
         
@@ -242,10 +255,11 @@
         layer.bounds = CGRectMake(0, 0, image.size.width * self.tool.scale.x, image.size.height * self.tool.scale.y);
         layer.position = CGPointMake(self.tool.baseView.layer.bounds.size.width / 2, self.tool.baseView.layer.bounds.size.height / 2);
         self.imageName = frameNode.imageName;
+        self.imageSize = image.size;
     }
     
     if (!frameNode.transformValue) {
-        [frameNode refreshTransformValueWithScaleX:self.tool.scale.x scaleY:self.tool.scale.y];
+        [frameNode refreshTransformValueWithScaleX:self.tool.scale.x scaleY:self.tool.scale.y animOffX:self.tool.animOffset.x animOffY:self.tool.animOffset.y];
     }
     
     CATransform3D transform3D = CATransform3DMakeAffineTransform([frameNode.transformValue CGAffineTransformValue]);
@@ -283,32 +297,40 @@
     }
 }
 
+-(void)updateToIndexInner:(NSInteger)index lastIndex:(NSInteger) lastIndex{
+    self.currIndex = index;
+    if (!self.tool.playingAnimName || ![self.animName isEqualToString:self.tool.playingAnimName]) {
+        return;
+    }
+    FlashViewFrameNode *frameNode = self.frameDict[@(index)];
+    if (frameNode && !frameNode.isEmpty) {
+        [self updateLayerViewWithFrameNode:frameNode isFirstFrame:(lastIndex > index || index == self.keyFrames.firstObject.frameIndex)];
+        
+        //        NSLog(@" layer(%ld) normal update to index(%ld) lastIndex(%ld) then layer.sx=%f layer.sy=%f", self.index, index, lastIndex, _layer.transform.m11, _layer.transform.m22);
+    }else{
+        //因为 frameDict 只为 tween动画做了索引，非tween动画只保存关键帧。
+        //所以 如果当前帧比最后一个[有效]关键帧有效范围还要大，那么需要移除此帧。
+        //为什么写有效关键帧呢，因为可能后面有N帧是empty，此时需要忽略empty帧。
+        FlashViewFrameNode *lastFrameNode = nil;
+        for (NSInteger i = self.keyFrames.count - 1; i >= 0; i--) {
+            lastFrameNode = self.keyFrames[i];
+            if (!lastFrameNode.isEmpty) {
+                break;
+            }
+        }
+        if (frameNode.isEmpty || !lastFrameNode || (index > lastFrameNode.frameIndex + lastFrameNode.duration)) {
+            [self removeLayers];
+        }
+    }
+}
+
 -(void)updateToIndex:(NSInteger)index lastIndex:(NSInteger) lastIndex{
-    //为了不丢帧，绘制工作扔到主线程，用隐式动画可去除卡顿感
     __weak FlashViewLayerNode *layerNode = self;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (!layerNode.tool.playingAnimName || ![layerNode.animName isEqualToString:layerNode.tool.playingAnimName]) {
-            return;
-        }
-        FlashViewFrameNode *frameNode = layerNode.frameDict[@(index)];
-        if (frameNode && !frameNode.isEmpty) {
-            [layerNode updateLayerViewWithFrameNode:frameNode isFirstFrame:(lastIndex > index)];
-        }else{
-            //因为 frameDict 只为 tween动画做了索引，非tween动画只保存关键帧。
-            //所以 如果当前帧比最后一个[有效]关键帧有效范围还要大，那么需要移除此帧。
-            //为什么写有效关键帧呢，因为可能后面有N帧是empty，此时需要忽略empty帧。
-            FlashViewFrameNode *lastFrameNode = nil;
-            for (NSInteger i = layerNode.keyFrames.count - 1; i >= 0; i--) {
-                lastFrameNode = layerNode.keyFrames[i];
-                if (!lastFrameNode.isEmpty) {
-                    break;
-                }
-            }
-            if (frameNode.isEmpty || !lastFrameNode || (index > lastFrameNode.frameIndex + lastFrameNode.duration)) {
-                [layerNode removeLayers];
-            }
-        }
-    });
+    [self.tool.workQueue addOperationWithBlock:^{
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [layerNode updateToIndexInner:index lastIndex:lastIndex];
+        });
+    }];
 }
 
 -(void)trigerEventWithIndex:(NSInteger)index delegate:(id<FlashViewDelegate>)delegate{
@@ -350,6 +372,12 @@
 @end
 
 @implementation FlashViewAnimNode
+
+-(void) resetLayer{
+    for (FlashViewLayerNode *layerNode in _layers) {
+        [layerNode resetLayer];
+    }
+}
 
 -(void)onReady{
     for (FlashViewLayerNode *layerNode in self.layers) {

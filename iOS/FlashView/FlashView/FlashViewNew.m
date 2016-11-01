@@ -24,9 +24,9 @@
     //可写目录
     NSString *mWritablePath;
     //数据格式：json还是bin
-    FlashFileDataType mFileDataType;
+    FlashViewFileDataType mFileDataType;
     //文件位置：在Bundle（Resource）还是在Document中
-    FlashFileType mFileType;
+    FlashViewFileType mFileType;
     
     //动画数据
     FlashViewNode *mFlashViewNode;
@@ -69,18 +69,29 @@
 
 //构造方法：animDir为目录名，若动画存储在document中，目录名有效，默认值为 flashAnims
 -(instancetype) initWithFlashName:(NSString *)flashName andAnimDir:(NSString *)animDir{
-    return [self initWithFlashName:flashName andAnimDir:animDir scaleMode:ScaleModeRespective designResolution:CGSizeMake(640, 1136)];
+    return [self initWithFlashName:flashName andAnimDir:animDir scaleMode:FlashViewScaleModeHeightFit designResolution:CGSizeMake(640, 1136) designScreenOrientation:FlashViewScreenOrientationVer];
 }
 
-//构造方法：animDir为目录名，若动画存储在document中，目录名有效，默认值为 flashAnims，ScaleMode为适配缩放模式，resolution为设计分辨率
--(instancetype) initWithFlashName:(NSString *)flashName andAnimDir:(NSString *)animDir scaleMode:(ScaleMode)scaleMode designResolution:(CGSize)resolution{
-    if (self = [super init]) {
+//构造方法：animDir为目录名，若动画存储在document中，目录名有效，默认值为 flashAnimsFlashViewScaleMode为适配缩放模式，resolution为设计分辨率
+-(instancetype) initWithFlashName:(NSString *)flashName andAnimDir:(NSString *)animDir scaleMode:(FlashViewScaleMode)scaleMode designResolution:(CGSize)resolution designScreenOrientation:(FlashViewScreenOrientation) designScreenOrientation{
+    if (self = [self init]) {
         mFlashName = flashName;
         mFlashAnimDir = animDir;
+        self.designScreenOrientation = designScreenOrientation;
         [self setScaleMode:scaleMode andDesignResolution:resolution];
         if (![self innerInit]) {
             return nil;
         }
+    }
+    return self;
+}
+
+- (instancetype)init{
+    self = [super init];
+    if (self) {
+        self.animPosMask = FlashViewAnimPosMaskVerCenter | FlashViewAnimPosMaskHorCenter;
+        self.screenOrientation = UIDeviceOrientationIsLandscape([UIDevice currentDevice].orientation) ? FlashViewScreenOrientationHor : FlashViewScreenOrientationVer;
+        self.implicitAnimDurationScale = 1;
     }
     return self;
 }
@@ -98,6 +109,16 @@
     mLastUpdateLoopTimeMs = -1;
     
     CGSize screenSize = [UIScreen mainScreen].bounds.size;
+    switch (self.designScreenOrientation) {
+        case FlashViewScreenOrientationHor:
+            screenSize = FLASH_VIEW_SCREEN_SIZE_HOR;
+            break;
+        case FlashViewScreenOrientationVer:
+            screenSize = FLASH_VIEW_SCREEN_SIZE_VER;
+            break;
+        default:
+            break;
+    }
     self.frame = CGRectMake(0, 0, screenSize.width, screenSize.height);
     
     mFileManager = [NSFileManager defaultManager];
@@ -112,31 +133,31 @@
         if (!filePath) {
             filePath = [NSString stringWithFormat:@"%@/%@/%@.flajson", mWritablePath, mFlashAnimDir, mFlashName];
             if ([mFileManager fileExistsAtPath:filePath]) {
-                mFileType = FlashFileTypeDocument;
-                mFileDataType = FlashFileDataTypeJson;
+                mFileType = FlashViewFileTypeDocument;
+                mFileDataType = FlashViewFileDataTypeJson;
             }else{
                 filePath = [NSString stringWithFormat:@"%@/%@/%@.flabin", mWritablePath, mFlashAnimDir, mFlashName];
                 if ([mFileManager fileExistsAtPath:filePath]) {
-                    mFileType = FlashFileTypeDocument;
-                    mFileDataType = FlashFileDataTypeBin;
+                    mFileType = FlashViewFileTypeDocument;
+                    mFileDataType = FlashViewFileDataTypeBin;
                 }
             }
         }else{
-            mFileType = FlashFileTypeResource;
-            mFileDataType = FlashFileDataTypeBin;
+            mFileType = FlashViewFileTypeResource;
+            mFileDataType = FlashViewFileDataTypeBin;
         }
     }else{
-        mFileType = FlashFileTypeResource;
-        mFileDataType = FlashFileDataTypeJson;
+        mFileType = FlashViewFileTypeResource;
+        mFileDataType = FlashViewFileDataTypeJson;
     }
     
-    if (mFileType == FlashFileTypeNone) {
+    if (mFileType == FlashViewFileTypeNone) {
         NSLog(@"FlashView init error file %@.flajson/.flabin is not exist", mFlashName);
         return NO;
     }
     
     //读取并解析数据
-    if (mFileDataType == FlashFileDataTypeJson) {
+    if (mFileDataType == FlashViewFileDataTypeJson) {
         if (![self parseJsonFile]) {
             NSLog(@"FlashView init error file %@.flajson is not json format", mFlashName);
             return NO;
@@ -172,22 +193,37 @@
 }
 
 //设置缩放类型
--(void) setScaleMode:(ScaleMode)mode andDesignResolution:(CGSize)resolution{
+-(void) setScaleMode:(FlashViewScaleMode)mode andDesignResolution:(CGSize)resolution{
     UIScreen *mainScreen = [UIScreen mainScreen];
     CGSize screenSize = mainScreen.bounds.size;
+    
+    //如果设置了屏幕方向，表示通过计算animOff 来调整动画位置，需要保证屏幕尺寸不跟随系统变化
+    if (self.screenOrientation != FlashViewScreenOrientationNone) {
+        switch (self.designScreenOrientation) {
+            case FlashViewScreenOrientationHor:
+                screenSize = FLASH_VIEW_SCREEN_SIZE_HOR;
+                break;
+            case FlashViewScreenOrientationVer:
+                screenSize = FLASH_VIEW_SCREEN_SIZE_VER;
+                break;
+            default:
+                return;
+        }
+    }
+    
     CGFloat wRate = screenSize.width / resolution.width;
     CGFloat hRate = screenSize.height / resolution.height;
     switch (mode) {
-        case ScaleModeWidthFit:
+        case FlashViewScaleModeWidthFit:
             [self setScaleWithX:wRate y:wRate isDesignResolutionEffect:NO];
             break;
-        case ScaleModeHeightFit:
+        case FlashViewScaleModeHeightFit:
             [self setScaleWithX:hRate y:hRate isDesignResolutionEffect:NO];
             break;
-        case ScaleModeRespective:
+        case FlashViewScaleModeRespective:
             [self setScaleWithX:wRate y:hRate isDesignResolutionEffect:NO];
             break;
-        case ScaleModeDefault:
+        case FlashViewScaleModeDefault:
             [self setScaleWithX:1 y:1 isDesignResolutionEffect:NO];
             break;
     }
@@ -206,15 +242,113 @@
     }
 }
 
+//设置动画位置
+-(void)setAnimPosMask:(FlashViewAnimPosMask)animPosMask{
+    if (_animPosMask == animPosMask) {
+        return;
+    }
+    _animPosMask = animPosMask;
+    
+    //计算偏移量
+    [self calculateFactAnimOffset];
+    
+    if (self.isInitOk) {
+        [mFlashViewNode updateTransform];
+    }
+}
+
+-(void)setScreenOrientation:(FlashViewScreenOrientation)screenOrientation{
+    if (_screenOrientation == screenOrientation) {
+        return;
+    }
+    _screenOrientation = screenOrientation;
+    
+    //计算偏移量
+    [self calculateFactAnimOffset];
+    
+    if (self.isInitOk) {
+        [mFlashViewNode updateTransform];
+    }
+}
+
+//直接设置AnimOffset
+-(void)setAnimOffset:(CGPoint)animOffset{
+    if (CGPointEqualToPoint(_animOffset, animOffset)) {
+        return;
+    }
+    _animOffset = animOffset;
+    self.tool.animOffset = animOffset;
+    if (self.isInitOk) {
+        [mFlashViewNode updateTransform];
+    }
+}
+
+//-(void)setFrame:(CGRect)frame{
+//    [super setFrame:frame];
+//    if (self.isInitOk) {
+//        [self calculateFactAnimOffset];
+//    }
+//}
+
+//根据 screenOrientation posMask 能够算出动画偏移量。
+-(void) calculateFactAnimOffset{
+    //屏幕方向变化了
+    if (self.designScreenOrientation != FlashViewScreenOrientationNone && _screenOrientation != self.designScreenOrientation) {
+        CGFloat animOffX = 0;
+        CGFloat animOffY = 0;
+        switch (_screenOrientation) {
+                //横向变竖向
+            case FlashViewScreenOrientationVer:{
+                //计算posMask 横向
+                if (self.animPosMask & FlashViewAnimPosMaskHorCenter) {
+                    animOffX = -(FLASH_VIEW_SCREEN_SIZE_HOR.width / 2 - FLASH_VIEW_SCREEN_SIZE_VER.width / 2);
+                }else if(self.animPosMask & FlashViewAnimPosMaskRight){
+                    animOffX = -(FLASH_VIEW_SCREEN_SIZE_HOR.width - self.frame.size.width);
+                }
+                
+                //计算posMask 竖向
+                if (self.animPosMask & FlashViewAnimPosMaskVerCenter) {
+                    animOffY = -(FLASH_VIEW_SCREEN_SIZE_HOR.height / 2 - FLASH_VIEW_SCREEN_SIZE_VER.height / 2);
+                }else if(self.animPosMask & FlashViewAnimPosMaskBottom){
+                    animOffY = FLASH_VIEW_SCREEN_SIZE_VER.height - self.frame.size.height;
+                }
+            }
+                break;
+                //竖向变横向
+            case FlashViewScreenOrientationHor:{
+                //计算posMask 横向
+                if (self.animPosMask & FlashViewAnimPosMaskHorCenter) {
+                    animOffX = FLASH_VIEW_SCREEN_SIZE_HOR.width / 2 - FLASH_VIEW_SCREEN_SIZE_VER.width / 2;
+                }else if(self.animPosMask & FlashViewAnimPosMaskRight){
+                    animOffX = FLASH_VIEW_SCREEN_SIZE_HOR.width - self.frame.size.width;
+                }
+                
+                //计算posMask 竖向
+                if (self.animPosMask & FlashViewAnimPosMaskVerCenter) {
+                    animOffY = FLASH_VIEW_SCREEN_SIZE_HOR.height / 2 - FLASH_VIEW_SCREEN_SIZE_VER.height / 2;
+                }else if(self.animPosMask & FlashViewAnimPosMaskBottom){
+                    animOffY = -(FLASH_VIEW_SCREEN_SIZE_VER.height - self.frame.size.height);
+                }
+            }
+                break;
+            default:
+                break;
+        }
+        self.tool.animOffset = CGPointMake(animOffX, animOffY);
+    }else{
+        self.tool.animOffset = self.animOffset;
+    }
+}
+
 //以二进制方式读取文件数据
 -(NSData *)readData{
     NSData *data = nil;
     switch (mFileType) {
-        case FlashFileTypeDocument:
-            data = [NSData dataWithContentsOfFile:[NSString stringWithFormat:@"%@/%@/%@%@", mWritablePath, mFlashAnimDir, mFlashName, mFileDataType == FlashFileDataTypeJson ? @".flajson" : @".flabin"]];
+        case FlashViewFileTypeDocument:
+            data = [NSData dataWithContentsOfFile:[NSString stringWithFormat:@"%@/%@/%@%@", mWritablePath, mFlashAnimDir, mFlashName, mFileDataType == FlashViewFileDataTypeJson ? @".flajson" : @".flabin"]];
             break;
-        case FlashFileTypeResource:
-            data = [NSData dataWithContentsOfFile:[mMainBundle pathForResource:[NSString stringWithFormat:@"%@%@", mFlashName, mFileDataType == FlashFileDataTypeJson ? @".flajson" : @".flabin"] ofType:nil]];
+        case FlashViewFileTypeResource:
+            data = [NSData dataWithContentsOfFile:[mMainBundle pathForResource:[NSString stringWithFormat:@"%@%@", mFlashName, mFileDataType == FlashViewFileDataTypeJson ? @".flajson" : @".flabin"] ofType:nil]];
             break;
         default:
             break;
@@ -241,9 +375,9 @@
 //根据flash数据文件中得到的图片名字，读取真正的图片。
 -(UIImage *)readImage:(NSString *)path{
     switch (mFileType) {
-        case FlashFileTypeDocument:
+        case FlashViewFileTypeDocument:
             return [UIImage imageWithContentsOfFile:[NSString stringWithFormat:@"%@/%@/%@/%@", mWritablePath, mFlashAnimDir, mFlashName, path]];
-        case FlashFileTypeResource:
+        case FlashViewFileTypeResource:
             return [UIImage imageWithContentsOfFile:[mMainBundle pathForResource:path ofType:nil]];
         default:
             break;
@@ -266,13 +400,17 @@
     
     //帧率
     NSInteger frameRate = [jsonDict[@"frameRate"] integerValue];
-    NSInteger oneFrameTime = 1000 / frameRate;
+    NSInteger oneFrameTimeMs = 1000 / frameRate;
     
-    self.tool.implicitAnimDuration = 1.0 / frameRate;
+    //test
+    //    frameRate = 5;
+    //    oneFrameTimeMs = 200;
+    
+    self.tool.implicitAnimDuration = self.implicitAnimDurationScale / frameRate;
     
     if (!mFlashViewNode) {
         mFlashViewNode = [[FlashViewNode alloc] init];
-        mFlashViewNode.oneFrameDurationMs = oneFrameTime;
+        mFlashViewNode.oneFrameDurationMs = oneFrameTimeMs;
         mFlashViewNode.frameRate = frameRate;
     }
     
@@ -337,22 +475,22 @@
     
     FlashViewDataReader *dataReader = [[FlashViewDataReader alloc] initWithNSData:binData];
     NSInteger frameRate = [dataReader readUShort];
-    NSInteger oneFrameTime = 1000 / frameRate;
+    NSInteger oneFrameTimeMs = 1000 / frameRate;
     
-    self.tool.implicitAnimDuration = 1.0 / frameRate;
+    self.tool.implicitAnimDuration = self.implicitAnimDurationScale / frameRate;
     
     if (!mFlashViewNode) {
         mFlashViewNode = [[FlashViewNode alloc] init];
-        mFlashViewNode.oneFrameDurationMs = oneFrameTime;
+        mFlashViewNode.oneFrameDurationMs = oneFrameTimeMs;
         mFlashViewNode.frameRate = frameRate;
     }
     
     NSString *imagePath = nil;
     switch (mFileType) {
-        case FlashFileTypeDocument:
+        case FlashViewFileTypeDocument:
             imagePath = [NSString stringWithFormat:@"%@/%@/%@", mWritablePath, mFlashAnimDir, mFlashName];
             break;
-        case FlashFileTypeResource:
+        case FlashViewFileTypeResource:
             imagePath = [mMainBundle bundlePath];
             break;
         default:
@@ -506,7 +644,7 @@
         if (currIndex + 1 >= animNode.frameCount || currIndex < mLastPlayIndex) {
             mLoopTimes++;
             mLastUpdateLoopTimeMs = currTime;
-            if (mTotalLoopTimes != FlashLoopTimeForever && mLoopTimes >= mTotalLoopTimes) {
+            if (mTotalLoopTimes != FlashViewLoopTimeForever && mLoopTimes >= mTotalLoopTimes) {
                 [self stop];
                 return;
             }
@@ -531,9 +669,7 @@
 -(void) resetLayers{
     [CATransaction begin];
     [CATransaction setDisableActions:YES];
-    for(FlashViewLayerNode *layerNode in mFlashViewNode.anims[mPlayingAnimName].layers){
-        [layerNode resetLayer];
-    }
+    [mFlashViewNode.anims[mPlayingAnimName] resetLayer];
     [CATransaction commit];
 }
 
@@ -651,16 +787,17 @@
 
 //重新加载一个新的动画文件
 -(BOOL) reload:(NSString *)flashName andAnimDir:(NSString *)animDir{
-    return [self reload:flashName andAnimDir:animDir scaleMode:ScaleModeRespective designResolution:CGSizeMake(640, 1136)];
+    return [self reload:flashName andAnimDir:animDir scaleMode:FlashViewScaleModeRespective designResolution:CGSizeMake(640, 1136)];
 }
 
 //重新加载一个新的动画文件
--(BOOL) reload:(NSString *)flashName andAnimDir:(NSString *)animDir scaleMode:(ScaleMode)scaleMode designResolution:(CGSize)resolution{
+-(BOOL) reload:(NSString *)flashName andAnimDir:(NSString *)animDir scaleMode:(FlashViewScaleMode)scaleMode designResolution:(CGSize)resolution{
     [self stopInner];
     mFlashViewNode = nil;
     self.tool = nil;
     mFlashName = flashName;
     mFlashAnimDir = animDir;
+    [self calculateFactAnimOffset];
     [self setScaleMode:scaleMode andDesignResolution:resolution];
     if (![self innerInit]) {
         return NO;

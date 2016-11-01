@@ -35,9 +35,9 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
     NSString *mWritablePath;
     
     //文件在Document里还是在Resource里
-    FlashFileType mFileType;
+    FlashViewFileType mFileType;
     //动画是json还是二进制
-    FlashFileDataType mFileDataType;
+    FlashViewFileDataType mFileDataType;
     
     //动画描述文件json数据
     NSDictionary *mJson;
@@ -97,7 +97,7 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
     //设计分辨率换算出缩放值
     CGPoint mDesignResolutionScale;
     //缩放模型
-    ScaleMode mScaleMode;
+    FlashViewScaleMode mScaleMode;
     
     //stop at函数所需要的参数
     NSInteger mStopAtFrameIndex;
@@ -126,13 +126,13 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
     CGRect screenBound = [[UIScreen mainScreen] bounds];
     
     switch (mScaleMode) {
-        case ScaleModeWidthFit:
+        case FlashViewScaleModeWidthFit:
             mDesignResolutionScale = CGPointMake(mDesignResolution.width / screenBound.size.width, mDesignResolution.width / screenBound.size.width);
             break;
-        case ScaleModeHeightFit:
+        case FlashViewScaleModeHeightFit:
             mDesignResolutionScale = CGPointMake(mDesignResolution.height / screenBound.size.height, mDesignResolution.height / screenBound.size.height);
             break;
-        case ScaleModeRespective:
+        case FlashViewScaleModeRespective:
             mDesignResolutionScale = CGPointMake(mDesignResolution.width / screenBound.size.width, mDesignResolution.height / screenBound.size.height);
             break;
         default:
@@ -147,7 +147,7 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
     mMainBundle = [NSBundle mainBundle];
     //document根目录
     mWritablePath = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
-    mFileType = FlashFileTypeNone;
+    mFileType = FlashViewFileTypeNone;
     mSetLoopTimes = 1;
     mLoopTimes = 0;
     
@@ -170,31 +170,31 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
         if (!filePath) {
             filePath = [NSString stringWithFormat:@"%@/%@/%@.flajson", mWritablePath, mFlashAnimDir, mFlashName];
             if ([mFileManager fileExistsAtPath:filePath]) {
-                mFileType = FlashFileTypeDocument;
-                mFileDataType = FlashFileDataTypeJson;
+                mFileType = FlashViewFileTypeDocument;
+                mFileDataType = FlashViewFileDataTypeJson;
             }else{
                 filePath = [NSString stringWithFormat:@"%@/%@/%@.flabin", mWritablePath, mFlashAnimDir, mFlashName];
                 if ([mFileManager fileExistsAtPath:filePath]) {
-                    mFileType = FlashFileTypeDocument;
-                    mFileDataType = FlashFileDataTypeBin;
+                    mFileType = FlashViewFileTypeDocument;
+                    mFileDataType = FlashViewFileDataTypeBin;
                 }
             }
         }else{
-            mFileType = FlashFileTypeResource;
-            mFileDataType = FlashFileDataTypeBin;
+            mFileType = FlashViewFileTypeResource;
+            mFileDataType = FlashViewFileDataTypeBin;
         }
     }else{
-        mFileType = FlashFileTypeResource;
-        mFileDataType = FlashFileDataTypeJson;
+        mFileType = FlashViewFileTypeResource;
+        mFileDataType = FlashViewFileDataTypeJson;
     }
     
-    if (mFileType == FlashFileTypeNone) {
+    if (mFileType == FlashViewFileTypeNone) {
         NSLog(@"FlashView init error file %@.flajson/.flabin is not exist", mFlashName);
         return NO;
     }
     
     //读取并解析数据
-    if (mFileDataType == FlashFileDataTypeJson) {
+    if (mFileDataType == FlashViewFileDataTypeJson) {
         mJson = [self readJson];
         
         if (!mJson) {
@@ -217,7 +217,7 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
     
     //默认设计分辨率为iPhone5。可以使用 setScaleMode 修改此值。
     mDesignResolution = CGSizeMake(640, 1136);
-    mScaleMode = ScaleModeRespective;
+    mScaleMode =FlashViewScaleModeRespective;
     [self initDesignResolutionScale];
     
     //默认frame设置为全屏
@@ -232,7 +232,7 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
 }
 
 //设置缩放模式和设计分辨率，如果不是使用640x1136分辨率制作的flash，务必调用此方法。
--(void) setScaleMode:(ScaleMode)mode andDesignResolution:(CGSize)resolution{
+-(void) setScaleMode:(FlashViewScaleMode)mode andDesignResolution:(CGSize)resolution{
     mDesignResolution = resolution;
     mScaleMode = mode;
     [self initDesignResolutionScale];
@@ -376,8 +376,8 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
     [self stop];
     mFlashName = nil;
     mFlashAnimDir = nil;
-    mFileDataType = FlashFileDataTypeNone;
-    mFileType = FlashFileTypeNone;
+    mFileDataType = FlashViewFileDataTypeNone;
+    mFileType = FlashViewFileTypeNone;
     mJson = nil;
     mData = nil;
     mRunningAnimName = nil;
@@ -447,9 +447,9 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
 //根据flash数据文件中得到的图片名字，读取真正的图片。
 -(UIImage *)readImage:(NSString *)path{
     switch (mFileType) {
-        case FlashFileTypeDocument:
+        case FlashViewFileTypeDocument:
             return [UIImage imageWithContentsOfFile:[NSString stringWithFormat:@"%@/%@/%@/%@", mWritablePath, mFlashAnimDir, mFlashName, path]];
-        case FlashFileTypeResource:
+        case FlashViewFileTypeResource:
             return [UIImage imageWithContentsOfFile:[mMainBundle pathForResource:path ofType:nil]];
         default:
             break;
@@ -461,11 +461,11 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
 -(NSData *)readData{
     NSData *data = nil;
     switch (mFileType) {
-        case FlashFileTypeDocument:
-            data = [NSData dataWithContentsOfFile:[NSString stringWithFormat:@"%@/%@/%@%@", mWritablePath, mFlashAnimDir, mFlashName, mFileDataType == FlashFileDataTypeJson ? @".flajson" : @".flabin"]];
+        case FlashViewFileTypeDocument:
+            data = [NSData dataWithContentsOfFile:[NSString stringWithFormat:@"%@/%@/%@%@", mWritablePath, mFlashAnimDir, mFlashName, mFileDataType == FlashViewFileDataTypeJson ? @".flajson" : @".flabin"]];
             break;
-        case FlashFileTypeResource:
-            data = [NSData dataWithContentsOfFile:[mMainBundle pathForResource:[NSString stringWithFormat:@"%@%@", mFlashName, mFileDataType == FlashFileDataTypeJson ? @".flajson" : @".flabin"] ofType:nil]];
+        case FlashViewFileTypeResource:
+            data = [NSData dataWithContentsOfFile:[mMainBundle pathForResource:[NSString stringWithFormat:@"%@%@", mFlashName, mFileDataType == FlashViewFileDataTypeJson ? @".flajson" : @".flabin"] ofType:nil]];
             break;
         default:
             break;
@@ -811,7 +811,7 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
     }
     
     //防止动画停止前多播放了一帧。此处为临时修改，正确方法应该先判断动画完成事件，然后再drawIamge。
-    if (mSetLoopTimes == FlashLoopTimeForever || mLoopTimes < mSetLoopTimes || (mLoopTimes == mSetLoopTimes - 1 && mLastFrameIndex <= frameIndex)) {
+    if (mSetLoopTimes == FlashViewLoopTimeForever || mLoopTimes < mSetLoopTimes || (mLoopTimes == mSetLoopTimes - 1 && mLastFrameIndex <= frameIndex)) {
         NSDictionary *animDict = [mParsedData objectForKey:animName];
         
         NSArray *frameArray = [animDict objectForKey:@(frameIndex)];
@@ -861,7 +861,7 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
                 if (self.onEventBlock) {
                     [self performSelectorOnMainThread:@selector(onEventOnMainThread:) withObject:@{@"event": @(FlashViewEventOneLoopEnd), @"data":@(mLoopTimes)} waitUntilDone:NO];
                 }
-                if (mSetLoopTimes >= FlashLoopTimeOnce) {
+                if (mSetLoopTimes >= FlashViewLoopTimeOnce) {
                     if (++mLoopTimes >= mSetLoopTimes) {
                         if (self.delegate) {
                             [self.delegate onEvent:FlashViewEventStop data:nil];
@@ -1046,5 +1046,33 @@ static FlashColor FlashColorMake(float r, float g, float b, float a){
 //        [self cleanData];
 //    }
 //}
+
+//判断动画是否存在
++(BOOL) isAnimExist:(NSString *)flashName{
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSBundle *mainBundle = [NSBundle mainBundle];
+    NSString *writablePath = [NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    //先查找是否存在flajson文件，不存在则查找flabin。都不存在则初始化错误。并且确定文件是在Resource中还是在Document中
+    NSString * filePath = [mainBundle pathForResource:[NSString stringWithFormat:@"%@.flajson", flashName] ofType:nil];
+    if (!filePath) {
+        filePath = [mainBundle pathForResource:[NSString stringWithFormat:@"%@.flabin", flashName] ofType:nil];
+        if (!filePath) {
+            filePath = [NSString stringWithFormat:@"%@/%@/%@.flajson", writablePath, FLASH_VIEW_DEFAULT_DIR_NAME, flashName];
+            if ([fileManager fileExistsAtPath:filePath]) {
+                return YES;
+            }else{
+                filePath = [NSString stringWithFormat:@"%@/%@/%@.flabin", writablePath, FLASH_VIEW_DEFAULT_DIR_NAME, flashName];
+                if ([fileManager fileExistsAtPath:filePath]) {
+                    return YES;
+                }
+            }
+        }else{
+            return YES;
+        }
+    }else{
+        return YES;
+    }
+    return NO;
+}
 
 @end

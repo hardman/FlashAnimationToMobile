@@ -6,6 +6,19 @@
 
 #import <Foundation/Foundation.h>
 
+//屏幕尺寸
+//当前屏幕尺寸
+#define FLASH_VIEW_SCREEN_SIZE [UIScreen mainScreen].bounds.size
+//横屏屏幕尺寸
+#define FLASH_VIEW_SCREEN_SIZE_HOR \
+CGSizeMake(\
+(FLASH_VIEW_SCREEN_SIZE.width > FLASH_VIEW_SCREEN_SIZE.height ? FLASH_VIEW_SCREEN_SIZE.width : FLASH_VIEW_SCREEN_SIZE.height) \
+, \
+(FLASH_VIEW_SCREEN_SIZE.width < FLASH_VIEW_SCREEN_SIZE.height ? FLASH_VIEW_SCREEN_SIZE.width : FLASH_VIEW_SCREEN_SIZE.height) \
+)
+//竖屏屏幕尺寸
+#define FLASH_VIEW_SCREEN_SIZE_VER CGSizeMake(FLASH_VIEW_SCREEN_SIZE_HOR.height, FLASH_VIEW_SCREEN_SIZE_HOR.width)
+
 //默认动画目录
 #define FLASH_VIEW_DEFAULT_DIR_NAME @"flashAnims"
 //默认动画zip目录
@@ -13,17 +26,17 @@
 
 //表示文件是在Resource里还是在Document里
 typedef enum : NSInteger {
-    FlashFileTypeNone,
-    FlashFileTypeResource,
-    FlashFileTypeDocument,
-} FlashFileType;
+    FlashViewFileTypeNone,
+    FlashViewFileTypeResource,
+    FlashViewFileTypeDocument,
+} FlashViewFileType;
 
 //表示动画描述文件是json还是二进制
 typedef enum : NSInteger {
-    FlashFileDataTypeNone,
-    FlashFileDataTypeJson,
-    FlashFileDataTypeBin,
-} FlashFileDataType;
+    FlashViewFileDataTypeNone,
+    FlashViewFileDataTypeJson,
+    FlashViewFileDataTypeBin,
+} FlashViewFileDataType;
 
 //动画帧更新模式（deprecated）
 typedef enum : NSUInteger {
@@ -33,9 +46,9 @@ typedef enum : NSUInteger {
 
 //动画循环次数
 typedef enum : NSUInteger {
-    FlashLoopTimeOnce = 1,//循环1次
-    FlashLoopTimeForever = 0,//无限循环
-} FlashLoopTime;
+    FlashViewLoopTimeOnce = 1,//循环1次
+    FlashViewLoopTimeForever = 0,//无限循环
+} FlashViewLoopTime;
 
 //动画事件，监听动画开始结束，帧事件等等。
 typedef enum NSUInteger{
@@ -48,17 +61,37 @@ typedef enum NSUInteger{
 
 //缩放模式，类似于UIView的 contentMode
 typedef enum : NSUInteger {
-    ScaleModeWidthFit,//宽度充满frame，保持宽高比
-    ScaleModeHeightFit,//高度充满frame，保持宽高比
-    ScaleModeRespective,//宽度高度分别充满frame，不一定保持宽高比
-    ScaleModeDefault,//默认，不处理
-} ScaleMode;
+   FlashViewScaleModeWidthFit,//宽度充满frame，保持宽高比
+   FlashViewScaleModeHeightFit,//高度充满frame，保持宽高比
+   FlashViewScaleModeRespective,//宽度高度分别充满frame，不一定保持宽高比
+   FlashViewScaleModeDefault,//默认，不处理
+}FlashViewScaleMode;
 
 //动画运行线程
 typedef enum : NSUInteger {
     FlashViewRunModeBackgroundThread,//动画在后台线程运行（建议）
     FlashViewRunModeMainThread,//动画在主线程运行
 } FlashViewRunMode;
+
+//Flash动画的位置
+typedef enum : NSUInteger {
+    //横向
+    FlashViewAnimPosMaskLeft = 1,//靠左，
+    FlashViewAnimPosMaskRight = 1 << 1,//靠右
+    FlashViewAnimPosMaskHorCenter = 1 << 5,//横向居中
+    
+    //竖向
+    FlashViewAnimPosMaskTop = 1 << 2,//靠上
+    FlashViewAnimPosMaskBottom = 1 << 3,//靠下
+    FlashViewAnimPosMaskVerCenter = 1 << 4,//竖向居中
+} FlashViewAnimPosMask;
+
+//设置屏幕方向，用于根据设置的屏幕方向（而不是系统的）调整动画的位置。
+typedef enum : NSUInteger {
+    FlashViewScreenOrientationNone,//不关心横竖屏
+    FlashViewScreenOrientationHor,//横屏
+    FlashViewScreenOrientationVer,//竖屏
+} FlashViewScreenOrientation;
 
 //事件回调代理
 @protocol FlashViewDelegate <NSObject>

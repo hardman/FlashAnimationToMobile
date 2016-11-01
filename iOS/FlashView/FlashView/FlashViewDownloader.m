@@ -230,6 +230,9 @@
 }
 
 -(void) updateAnimName:(NSString *)animName version:(NSString *)version{
+    if (!animName || !version) {
+        return;
+    }
     self.versionData[animName] = version;
 }
 

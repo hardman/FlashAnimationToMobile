@@ -57,7 +57,7 @@
 -(void) playFlashAnim{
     FlashViewNew *flashView = [[FlashViewNew alloc] initWithFlashName:@"heiniao"];
     [self.view addSubview:flashView];
-    [flashView play:flashView.animNames[0] loopTimes:FlashLoopTimeOnce];
+    [flashView play:flashView.animNames[0] loopTimes:FlashViewLoopTimeOnce];
     __weak FlashViewNew *weakFlashView = flashView;
     __weak TestFlashViewDownloadViewController *weakCtl = self;
     flashView.onEventBlock = ^(FlashViewEvent evt, id data){
@@ -66,7 +66,7 @@
             if (weakCtl.nextIndex >= flashView.animNames.count) {
                 weakCtl.nextIndex = 0;
             }
-            [weakFlashView play:weakFlashView.animNames[weakCtl.nextIndex] loopTimes:FlashLoopTimeOnce];
+            [weakFlashView play:weakFlashView.animNames[weakCtl.nextIndex] loopTimes:FlashViewLoopTimeOnce];
         }
     };
 }

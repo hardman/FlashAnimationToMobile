@@ -65,6 +65,8 @@
 @property (nonatomic, weak) FlashViewTool *tool;
 //当前层显示的图片名字
 @property (nonatomic, copy) NSString *imageName;
+//当前图片的尺寸
+@property (nonatomic, unsafe_unretained) CGSize imageSize;
 //关键帧
 @property (nonatomic,readonly, strong) NSArray<FlashViewFrameNode *> *keyFrames;
 //添加关键帧
@@ -89,6 +91,8 @@
 -(void) addLayer:(FlashViewLayerNode *) layer;
 //移除可显示的layers
 -(void) removeLayers;
+//重置layer
+-(void) resetLayer;
 @end
 
 //所有动画数据

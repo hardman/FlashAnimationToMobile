@@ -23,6 +23,12 @@
 //隐式动画时间，默认 1.0/30 s，将这个值变的越大动画效果会越丝滑，但是动画可能有变形。这个具体根据自己需要设置。
 @property (nonatomic, unsafe_unretained) CGFloat implicitAnimDuration;
 
+//动画偏移量
+@property (nonatomic, unsafe_unretained) CGPoint animOffset;
+
+//工作线程
+@property (nonatomic, strong) NSOperationQueue *workQueue;
+
 //是否动画在运行
 @property (nonatomic, copy) NSString *playingAnimName;
 
