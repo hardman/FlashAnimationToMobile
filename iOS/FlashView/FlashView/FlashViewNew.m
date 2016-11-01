@@ -69,15 +69,16 @@
 
 //构造方法：animDir为目录名，若动画存储在document中，目录名有效，默认值为 flashAnims
 -(instancetype) initWithFlashName:(NSString *)flashName andAnimDir:(NSString *)animDir{
-    return [self initWithFlashName:flashName andAnimDir:animDir scaleMode:FlashViewScaleModeHeightFit designResolution:CGSizeMake(640, 1136) designScreenOrientation:FlashViewScreenOrientationVer];
+    return [self initWithFlashName:flashName andAnimDir:animDir scaleMode:FlashViewScaleModeHeightFit designResolution:CGSizeMake(640, 1136) designScreenOrientation:FlashViewScreenOrientationVer currScreenOrientation:FlashViewScreenOrientationNone];
 }
 
-//构造方法：animDir为目录名，若动画存储在document中，目录名有效，默认值为 flashAnimsFlashViewScaleMode为适配缩放模式，resolution为设计分辨率
--(instancetype) initWithFlashName:(NSString *)flashName andAnimDir:(NSString *)animDir scaleMode:(FlashViewScaleMode)scaleMode designResolution:(CGSize)resolution designScreenOrientation:(FlashViewScreenOrientation) designScreenOrientation{
+//构造方法：animDir为目录名，若动画存储在document中，目录名有效，默认值为 flashAnimsFlashViewScaleMode为适配缩放模式，resolution为设计分辨率 designScreenOrientation：设计屏幕方向，currScreenOrientation：当前屏幕方向
+-(instancetype) initWithFlashName:(NSString *)flashName andAnimDir:(NSString *)animDir scaleMode:(FlashViewScaleMode)scaleMode designResolution:(CGSize)resolution designScreenOrientation:(FlashViewScreenOrientation) designScreenOrientation currScreenOrientation:(FlashViewScreenOrientation) currScreenOrientation{
     if (self = [self init]) {
         mFlashName = flashName;
         mFlashAnimDir = animDir;
         self.designScreenOrientation = designScreenOrientation;
+        self.screenOrientation = currScreenOrientation;
         [self setScaleMode:scaleMode andDesignResolution:resolution];
         if (![self innerInit]) {
             return nil;
@@ -90,7 +91,6 @@
     self = [super init];
     if (self) {
         self.animPosMask = FlashViewAnimPosMaskVerCenter | FlashViewAnimPosMaskHorCenter;
-        self.screenOrientation = UIDeviceOrientationIsLandscape([UIDevice currentDevice].orientation) ? FlashViewScreenOrientationHor : FlashViewScreenOrientationVer;
         self.implicitAnimDurationScale = 1;
     }
     return self;

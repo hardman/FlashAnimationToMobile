@@ -9,7 +9,7 @@
 
 @interface FlashViewNew : UIControl
 //构造器
--(instancetype) initWithFlashName:(NSString *)flashName andAnimDir:(NSString *)animDir scaleMode:(FlashViewScaleMode)scaleMode designResolution:(CGSize)resolution designScreenOrientation:(FlashViewScreenOrientation) designScreenOrientation;
+-(instancetype) initWithFlashName:(NSString *)flashName andAnimDir:(NSString *)animDir scaleMode:(FlashViewScaleMode)scaleMode designResolution:(CGSize)resolution designScreenOrientation:(FlashViewScreenOrientation) designScreenOrientation currScreenOrientation:(FlashViewScreenOrientation) currScreenOrientation;
 //构造器
 -(instancetype) initWithFlashName:(NSString *)flashName andAnimDir:(NSString *)animDir;
 //构造器
