@@ -202,4 +202,24 @@ static char *keynamefortest = 0;
     return UIInterfaceOrientationMaskAll;
 }
 
+- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
+    if (UIInterfaceOrientationIsPortrait(toInterfaceOrientation)) {
+        self.flashViewNew.screenOrientation = FlashViewScreenOrientationVer;
+    }else if(UIInterfaceOrientationIsLandscape(toInterfaceOrientation)){
+        self.flashViewNew.screenOrientation = FlashViewScreenOrientationHor;
+    }
+}
+
+- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
+}
+
+-(void)viewWillAppear:(BOOL)animated{
+    UIInterfaceOrientation toInterfaceOrientation = (UIInterfaceOrientation)[UIDevice currentDevice].orientation;
+    if (UIInterfaceOrientationIsPortrait(toInterfaceOrientation)) {
+        self.flashViewNew.screenOrientation = FlashViewScreenOrientationVer;
+    }else if(UIInterfaceOrientationIsLandscape(toInterfaceOrientation)){
+        self.flashViewNew.screenOrientation = FlashViewScreenOrientationHor;
+    }
+}
+
 @end
