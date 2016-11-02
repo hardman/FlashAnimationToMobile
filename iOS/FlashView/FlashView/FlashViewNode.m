@@ -301,23 +301,6 @@
         
         //        NSLog(@" layer(%ld) normal update to index(%ld) lastIndex(%ld) then layer.sx=%f layer.sy=%f", self.index, index, lastIndex, _layer.transform.m11, _layer.transform.m22);
     }else{
-        //如果不显示则将layer的transform 设置为下一帧：
-        if (self.keyFrames.count > 0) {
-            FlashViewFrameNode *frameNode = nil;
-            NSInteger keyFrameIndex = 0;
-            do{
-                frameNode = self.keyFrames[keyFrameIndex++];
-            }while(keyFrameIndex < self.keyFrames.count && (frameNode.isEmpty || index >= frameNode.frameIndex));
-            if (frameNode) {
-                //关闭隐式动画设置transform会走同步，特别卡，但是将时间设为0能达到同样效果，但是是走异步了。
-                [CATransaction setAnimationDuration: 0];
-                //                CATransform3D transform3D = CATransform3DMakeAffineTransform([frameNode.transformValue CGAffineTransformValue]);
-                //                transform3D.m43 = self.index * 0.001;
-                //变换
-                //                _layer.transform = transform3D;
-                _layer.affineTransform = [frameNode.transformValue CGAffineTransformValue];
-            }
-        }
         //因为 frameDict 只为 tween动画做了索引，非tween动画只保存关键帧。
         //所以 如果当前帧比最后一个[有效]关键帧有效范围还要大，那么需要移除此帧。
         //为什么写有效关键帧呢，因为可能后面有N帧是empty，此时需要忽略empty帧。
@@ -329,6 +312,23 @@
             }
         }
         if (frameNode.isEmpty || !lastFrameNode || (index > lastFrameNode.frameIndex + lastFrameNode.duration)) {
+            //如果不显示则将layer的transform 设置为下一帧：
+            if (self.keyFrames.count > 0) {
+                FlashViewFrameNode *frameNode = nil;
+                NSInteger keyFrameIndex = 0;
+                do{
+                    frameNode = self.keyFrames[keyFrameIndex++];
+                }while(keyFrameIndex < self.keyFrames.count && (frameNode.isEmpty || index >= frameNode.frameIndex));
+                if (frameNode) {
+                    //关闭隐式动画设置transform会走同步，特别卡，但是将时间设为0能达到同样效果，但是是走异步了。
+                    [CATransaction setAnimationDuration: 0];
+                    //                CATransform3D transform3D = CATransform3DMakeAffineTransform([frameNode.transformValue CGAffineTransformValue]);
+                    //                transform3D.m43 = self.index * 0.001;
+                    //变换
+                    //                _layer.transform = transform3D;
+                    _layer.affineTransform = [frameNode.transformValue CGAffineTransformValue];
+                }
+            }
             [self removeLayers];
         }
     }
