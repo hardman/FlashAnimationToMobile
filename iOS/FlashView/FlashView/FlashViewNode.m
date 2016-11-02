@@ -262,7 +262,7 @@
     }
     
     CATransform3D transform3D = CATransform3DMakeAffineTransform([frameNode.transformValue CGAffineTransformValue]);
-    transform3D.m43 = self.index;
+    transform3D.m43 = self.index * 0.001;
     //变换
     layer.transform = transform3D;
     //    layer.affineTransform = [frameNode.transformValue CGAffineTransformValue];
@@ -313,7 +313,7 @@
                 //关闭隐式动画设置transform会走同步，特别卡，但是将时间设为0能达到同样效果，但是是走异步了。
                 [CATransaction setAnimationDuration: 0];
                 CATransform3D transform3D = CATransform3DMakeAffineTransform([frameNode.transformValue CGAffineTransformValue]);
-                transform3D.m43 = self.index;
+                transform3D.m43 = self.index * 0.001;
                 //变换
                 _layer.transform = transform3D;
             }

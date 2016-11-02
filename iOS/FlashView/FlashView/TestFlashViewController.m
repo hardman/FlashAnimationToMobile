@@ -52,7 +52,7 @@ static char *keynamefortest = 0;
     if (!_flashViewNew) {
         _flashViewNew = [[FlashViewNew alloc] init];
         _flashViewNew.designScreenOrientation = FlashViewScreenOrientationVer;
-        _flashViewNew.screenOrientation = FlashViewScreenOrientationHor;
+        _flashViewNew.screenOrientation = FlashViewScreenOrientationVer;
         _flashViewNew.animPosMask = FlashViewAnimPosMaskVerCenter | FlashViewAnimPosMaskHorCenter;
         [self.view addSubview:_flashViewNew];
     }
