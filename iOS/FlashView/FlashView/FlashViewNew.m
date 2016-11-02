@@ -10,6 +10,7 @@
 #import "FlashViewDataReader.h"
 
 @interface FlashViewNew()<FlashViewDelegate>
+@property (nonatomic, weak) UIView *animView;
 @property (nonatomic, strong) FlashViewTool *tool;
 @end
 @implementation FlashViewNew{
@@ -182,9 +183,27 @@
 -(FlashViewTool *)tool{
     if (!_tool) {
         _tool = [[FlashViewTool alloc] init];
-        _tool.baseView = self;
+        _tool.baseView = self.animView;
     }
     return _tool;
+}
+
+-(UIView *)animView{
+    if (!_animView) {
+        UIView *animView = [[UIView alloc] init];
+        animView.translatesAutoresizingMaskIntoConstraints = NO;
+        [self addSubview:animView];
+        //top
+        [self addConstraint:[NSLayoutConstraint constraintWithItem:animView attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeTop multiplier:1 constant:0]];
+        //bottom
+        [self addConstraint:[NSLayoutConstraint constraintWithItem:animView attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeBottom multiplier:1 constant:0]];
+        //left
+        [self addConstraint:[NSLayoutConstraint constraintWithItem:animView attribute:NSLayoutAttributeLeft relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeLeft multiplier:1 constant:0]];
+        //right
+        [self addConstraint:[NSLayoutConstraint constraintWithItem:animView attribute:NSLayoutAttributeRight relatedBy:NSLayoutRelationEqual toItem:self attribute:NSLayoutAttributeRight multiplier:1 constant:0]];
+        _animView = animView;
+    }
+    return _animView;
 }
 
 //是否启用隐式动画
