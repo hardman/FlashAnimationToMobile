@@ -217,17 +217,15 @@
     CGSize screenSize = mainScreen.bounds.size;
     
     //如果设置了屏幕方向，表示通过计算animOff 来调整动画位置，需要保证屏幕尺寸不跟随系统变化
-    if (self.screenOrientation != FlashViewScreenOrientationNone) {
-        switch (self.designScreenOrientation) {
-            case FlashViewScreenOrientationHor:
-                screenSize = FLASH_VIEW_SCREEN_SIZE_HOR;
-                break;
-            case FlashViewScreenOrientationVer:
-                screenSize = FLASH_VIEW_SCREEN_SIZE_VER;
-                break;
-            default:
-                return;
-        }
+    switch (self.designScreenOrientation) {
+        case FlashViewScreenOrientationHor:
+            screenSize = FLASH_VIEW_SCREEN_SIZE_HOR;
+            break;
+        case FlashViewScreenOrientationVer:
+            screenSize = FLASH_VIEW_SCREEN_SIZE_VER;
+            break;
+        default:
+            break;
     }
     
     CGFloat wRate = screenSize.width / resolution.width;
