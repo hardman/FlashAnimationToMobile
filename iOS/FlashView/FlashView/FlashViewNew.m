@@ -38,12 +38,12 @@
     BOOL isPlaying;
     
     //动画开始时间（毫秒）
-    NSInteger mStartTimeMs;
+    uint64_t mStartTimeMs;
     //动画上一帧播放时间（毫秒）
-    NSInteger mLastFrameTimeMs;
+    uint64_t mLastFrameTimeMs;
     
     //上次更新LoopTime帧数
-    NSInteger mLastUpdateLoopTimeMs;
+    int64_t mLastUpdateLoopTimeMs;
     
     //当前动画起始帧
     NSInteger mFromIndex;
@@ -417,7 +417,7 @@
     
     //帧率
     NSInteger frameRate = [jsonDict[@"frameRate"] integerValue];
-    NSInteger oneFrameTimeMs = 1000 / frameRate;
+    uint64_t oneFrameTimeMs = 1000 / frameRate;
     
     //test
     //    frameRate = 5;
@@ -492,7 +492,7 @@
     
     FlashViewDataReader *dataReader = [[FlashViewDataReader alloc] initWithNSData:binData];
     NSInteger frameRate = [dataReader readUShort];
-    NSInteger oneFrameTimeMs = 1000 / frameRate;
+    uint64_t oneFrameTimeMs = 1000 / frameRate;
     
     self.tool.implicitAnimDuration = self.implicitAnimDurationScale / frameRate;
     
@@ -599,8 +599,9 @@
 }
 
 //当前时间：毫秒
--(NSInteger) currentTimeMs{
-    return [NSDate date].timeIntervalSince1970 * 1000;
+-(uint64_t) currentTimeMs{
+    NSTimeInterval time = [NSDate date].timeIntervalSince1970;
+    return (uint64_t)(time * 1000);
 }
 
 //当前播放的动画数据
@@ -635,12 +636,13 @@
 
 //动画主循环函数
 -(void) updateAnim:(CADisplayLink *)displayLink{
-    NSTimeInterval currTime = self.currentTimeMs;
+    uint64_t currTime = self.currentTimeMs;
     NSTimeInterval passedTime = currTime - mStartTimeMs;
     NSTimeInterval passedCount = passedTime / mFlashViewNode.oneFrameDurationMs;
     NSInteger animLen = mToIndex - mFromIndex + 1;
     NSInteger currIndex = mFromIndex + (NSInteger)passedCount % animLen;
     
+    //    NSLog(@"currIndex=%ld mlastPlayIndex=%ld", (long)currIndex, (long)mLastPlayIndex);
     //播放
     if (currIndex != mLastPlayIndex) {
         [self updateToFrameIndex:currIndex];

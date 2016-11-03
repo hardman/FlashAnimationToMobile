@@ -100,7 +100,7 @@
 //帧率
 @property (nonatomic, unsafe_unretained) NSUInteger frameRate;
 //一帧所花时间
-@property (nonatomic, unsafe_unretained) NSUInteger oneFrameDurationMs;
+@property (nonatomic, unsafe_unretained) uint64_t oneFrameDurationMs;
 //动画数据
 @property (nonatomic, readonly, strong) NSDictionary<NSString *, FlashViewAnimNode*> *anims;
 //增加动画数据
