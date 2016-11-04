@@ -63,6 +63,8 @@
     BOOL mIsInitOk;
 }
 
+@synthesize animOffset = _animOffset;
+
 //构造方法：flashName为flash文件名
 -(instancetype) initWithFlashName:(NSString *)flashName{
     return [self initWithFlashName:flashName andAnimDir:FLASH_VIEW_DEFAULT_DIR_NAME];
@@ -298,6 +300,10 @@
     if (self.isInitOk) {
         [mFlashViewNode updateTransform];
     }
+}
+
+-(CGPoint)animOffset{
+    return self.tool.animOffset;
 }
 
 //-(void)setFrame:(CGRect)frame{

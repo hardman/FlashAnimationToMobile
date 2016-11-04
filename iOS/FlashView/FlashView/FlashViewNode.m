@@ -193,7 +193,9 @@
         for (int j = currFrameNode.frameIndex; j < currFrameNode.frameIndex + currFrameNode.duration; j++) {
             FlashViewFrameNode *targetFrameNode = nil;
             if (!nextFrameNode) {
-                targetFrameNode = currFrameNode;
+                if (j == currFrameNode.frameIndex) {
+                    targetFrameNode = currFrameNode;
+                }
             }else{
                 CGFloat per = (j - currFrameNode.frameIndex) * 1.0 / (nextFrameNode.frameIndex - currFrameNode.frameIndex);
                 targetFrameNode = [[FlashViewFrameNode alloc] init];
