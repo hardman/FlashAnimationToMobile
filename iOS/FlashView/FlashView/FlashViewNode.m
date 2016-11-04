@@ -24,6 +24,28 @@
 //帧数据
 @implementation FlashViewFrameNode
 
+-(id)copy{
+    FlashViewFrameNode *newNode = [[FlashViewFrameNode alloc] init];
+    newNode.frameIndex = self.frameIndex;
+    newNode.isEmpty = self.isEmpty;
+    newNode.isTween = self.isTween;
+    newNode.duration = self.duration;
+    newNode.imageName = self.imageName;
+    newNode.x = self.x;
+    newNode.y = self.y;
+    newNode.scaleX = self.scaleX;
+    newNode.scaleY = self.scaleY;
+    newNode.skewX = self.skewX;
+    newNode.skewY = self.skewY;
+    newNode.mark = self.mark;
+    newNode.alpha = self.alpha;
+    newNode.r = self.r;
+    newNode.g = self.g;
+    newNode.b = self.b;
+    newNode.a = self.a;
+    return newNode;
+}
+
 -(void) refreshTransformValueWithScaleX:(CGFloat) scaleX scaleY:(CGFloat) scaleY animOffX:(CGFloat)animOffX animOffY:(CGFloat)animOffY{
     CGAffineTransform transform = CGAffineTransformIdentity;
     //旋转
@@ -193,8 +215,9 @@
         for (int j = currFrameNode.frameIndex; j < currFrameNode.frameIndex + currFrameNode.duration; j++) {
             FlashViewFrameNode *targetFrameNode = nil;
             if (!nextFrameNode) {
-                if (j == currFrameNode.frameIndex) {
-                    targetFrameNode = currFrameNode;
+                targetFrameNode = [currFrameNode copy];
+                if (j != currFrameNode.frameIndex) {
+                    targetFrameNode.mark = nil;
                 }
             }else{
                 CGFloat per = (j - currFrameNode.frameIndex) * 1.0 / (nextFrameNode.frameIndex - currFrameNode.frameIndex);
