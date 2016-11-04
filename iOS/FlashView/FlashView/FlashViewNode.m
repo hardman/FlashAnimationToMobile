@@ -212,6 +212,9 @@
                 targetFrameNode.a = [[self getPerValue:nextFrameNode old:currFrameNode key:@"a" per:per] charValue];
                 
                 targetFrameNode.imageName = currFrameNode.imageName;
+                if (j == currFrameNode.frameIndex) {
+                    targetFrameNode.mark = currFrameNode.mark;
+                }
             }
             self.frameDict[@(j)] = targetFrameNode;
             
