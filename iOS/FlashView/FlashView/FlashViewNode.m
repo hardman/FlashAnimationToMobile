@@ -238,8 +238,9 @@
     }
     
     CALayer *layer = self.layer;
-    //重置层级关系
-    [self.tool.baseView.layer insertSublayer:layer atIndex:(unsigned int)self.index];
+    if (!layer.superlayer) {
+        [self.tool.baseView.layer addSublayer:layer];
+    }
     
     if (!self.tool.isUseImplicitAnim || isFirstFrame) {
         //关闭隐式动画
@@ -263,19 +264,19 @@
         [frameNode refreshTransformValueWithScaleX:self.tool.scale.x scaleY:self.tool.scale.y animOffX:self.tool.animOffset.x animOffY:self.tool.animOffset.y];
     }
     
-    //    CATransform3D transform3D = CATransform3DMakeAffineTransform([frameNode.transformValue CGAffineTransformValue]);
-    //    transform3D.m43 = self.index * 0.001;
+    CATransform3D transform3D = CATransform3DMakeAffineTransform([frameNode.transformValue CGAffineTransformValue]);
+    transform3D.m43 = self.index;
     //变换
-    //    layer.transform = transform3D;
-    layer.affineTransform = [frameNode.transformValue CGAffineTransformValue];
+    layer.transform = transform3D;
     
     //透明度
     layer.opacity = frameNode.alpha / 255;
     
     //颜色叠加
     if (frameNode.a != 0 && layer.opacity) {
-        //重置层级关系
-        [self.tool.baseView.layer insertSublayer:self.colorLayer above:layer];
+        if (!self.colorLayer.superlayer) {
+            [self.tool.baseView.layer addSublayer:self.colorLayer];
+        }
         
         if (!self.colorLayer.mask) {
             self.colorLayer.mask = self.maskLayer;
@@ -325,11 +326,10 @@
                 if (frameNode) {
                     //关闭隐式动画设置transform会走同步，特别卡，但是将时间设为0能达到同样效果，但是是走异步了。
                     [CATransaction setAnimationDuration: 0];
-                    //                CATransform3D transform3D = CATransform3DMakeAffineTransform([frameNode.transformValue CGAffineTransformValue]);
-                    //                transform3D.m43 = self.index * 0.001;
-                    //变换
-                    //                _layer.transform = transform3D;
-                    _layer.affineTransform = [frameNode.transformValue CGAffineTransformValue];
+                    CATransform3D transform3D = CATransform3DMakeAffineTransform([frameNode.transformValue CGAffineTransformValue]);
+                    transform3D.m43 = self.index;
+                    // 变换
+                    _layer.transform = transform3D;
                 }
             }
             [self removeLayers];
