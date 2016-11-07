@@ -50,6 +50,9 @@
 @property (nonatomic, unsafe_unretained) CGPoint animOffset;
 // ==== 横屏适配 ====
 
+//直接设置动画缩放比例数值，isDREffect表示是否乘以自动适配的factor
+-(void) setScaleWithX:(CGFloat)x y:(CGFloat) y isDesignResolutionEffect:(BOOL)isDREffect;
+
 //是否启用隐式动画
 -(void) setUseImplicitAnim:(BOOL) isUseImplicitAnim;
 
