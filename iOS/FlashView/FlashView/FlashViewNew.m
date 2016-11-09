@@ -359,7 +359,7 @@
         }
         self.tool.animOffset = CGPointMake(animOffX, animOffY);
     }else{
-        self.tool.animOffset = self.animOffset;
+        self.tool.animOffset = _animOffset;
     }
 }
 
