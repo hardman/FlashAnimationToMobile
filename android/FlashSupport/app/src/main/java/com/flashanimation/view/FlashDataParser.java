@@ -8,7 +8,6 @@ package com.flashanimation.view;
 import android.content.Context;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Matrix;
@@ -21,12 +20,14 @@ import android.graphics.RectF;
 import android.os.Environment;
 import android.util.Log;
 
+import com.flashanimation.newAnim.FlashAnimCommon;
+import com.flashanimation.newAnim.data.FlashDataReader;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,6 +38,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import com.flashanimation.newAnim.FlashAnimCommon.*;
 
 /**
  * Created by wanghongyu on 10/12/15.
@@ -51,7 +53,7 @@ public class FlashDataParser{
     private String mFlashName = null;
 
     //flash文件目录，可能在Asset中（Assets/[flash dir]/[flash name]），也可能在sdard中（/sdcard/.[package name]/[flash dir]/[flash name]）。
-    private String mFlashDir = DEFAULT_FLASH_DIR;
+    private String mFlashDir = FlashAnimCommon.DEFAULT_FLASH_DIR;
 
     //表示dpi比例，也就是[本机dpi/默认设计dpi(326)]的值
     private float mDPIRate = -1;
@@ -62,10 +64,10 @@ public class FlashDataParser{
 
     //设计DPI，默认为326，iPhone5s的dpi，制作flash时画布大小为640x1136时不用变，否则需要修改此值。
     //如果不懂此值的意思，请查阅dpi相关的更多资料
-    private int mDesignDPI = DEFAULT_FLASH_DPI;
+    private int mDesignDPI = FlashAnimCommon.DEFAULT_FLASH_DPI;
 
     //指定的动画重复次数，默认为1次
-    private int mSetLoopTimes = FlashLoopTimeOnce;
+    private int mSetLoopTimes = FlashAnimCommon.FlashLoopTimeOnce;
 
     //当前动画播放中已经重复播放的动画次数
     private int mLoopTimes = 0;
@@ -73,60 +75,14 @@ public class FlashDataParser{
     //当前动画数据是否加载成功，如果加载不成功，那么所有对外函数(public)都不该调用。
     private boolean isInitOk = false;
 
-    //默认设计DPI
-    public static final int DEFAULT_FLASH_DPI = 326;
-
-    // 默认sd卡中动画文件存储文件夹
-    public static final String DEFAULT_FLASH_DIR = "flashAnims";
-    public static final String DEFAULT_FLASH_ZIP_DIR = "flashAnimZips";
-
-    // 动画循环模式：播放一次
-    public static final int FlashLoopTimeOnce = 1;
-
-    // 动画循环模式：永久循环
-    public static final int FlashLoopTimeForever = 0;
-
-    // 动画事件：动画过程会发生的事件 通过 FlashViewEventCallback 回调
-    public enum FlashViewEvent{//动画事件
-        START,//动画开始
-        FRAME,//每一帧回调
-        ONELOOPEND,//任意一次循环结束
-        STOP,//动画自然停止
-        MARK,//帧上带事件
-    }
-
-    private enum FileType{//表示动画文件在sd卡还是assets
-        ASSETS,
-        SDCARD,
-        NONE
-    }
-
-    private enum FileDataType{//描述文件是json还是二进制
-        JSON,
-        BIN,
-        NONE
-    }
-
-    //事件回调数据，内容可为空
-    public static class FlashViewEventData{
-        public int index;
-        public String mark;
-        public KeyFrameData data;
-    }
-
-    //事件回调接口
-    public interface IFlashViewEventCallback{
-        void onEvent(FlashViewEvent e, FlashViewEventData data);
-    }
-
     //回调事件
     private IFlashViewEventCallback mEventCallback;
 
     //文件数据格式
-    private FileDataType mFileDataType = FileDataType.NONE;
+    private FlashAnimCommon.FlashFileType mFileDataType = FlashAnimCommon.FlashFileType.NONE;
 
     //文件类型是在sdcard还是在assets
-    private FileType mFileType = FileType.NONE;
+    private FlashAnimCommon.FlashFileLocationType mFileType = FlashAnimCommon.FlashFileLocationType.NONE;
 
     //asset管理器
     private AssetManager mAssetManager;
@@ -134,27 +90,17 @@ public class FlashDataParser{
     //...文件在sd卡中的路径
     private String mSdcardPath = null;
 
-    //读取flash描述文件的帮助类
-    private static class Data{
-        String string;
-        byte [] bytes;
-    }
-
-    //读取flash描述文件的帮助类
-    private enum DataType{
-        STRING,
-        BYTES
-    }
+    private FlashAnimCommon mAnimCommon;
 
     /***
      * 3个构造方法
      */
     public FlashDataParser(Context c, String flashName) {
-        this(c, flashName, DEFAULT_FLASH_DIR);
+        this(c, flashName, FlashAnimCommon.DEFAULT_FLASH_DIR);
     }
 
     public FlashDataParser(Context c, String flashName, String flashDir) {
-        this(c, flashName, flashDir, DEFAULT_FLASH_DPI);
+        this(c, flashName, flashDir, FlashAnimCommon.DEFAULT_FLASH_DPI);
     }
 
     public FlashDataParser(Context c, String flashName, String flashDir, int designDPI){
@@ -185,162 +131,19 @@ public class FlashDataParser{
     }
 
     /***
-     * 从流中读取字符串
-     * @param in 输入流
-     * @return 读取到的字符串
-     */
-    private String readStringFromInStream(InputStream in){
-        StringBuilder ret = null;
-        try {
-            byte b[] = new byte[8096];
-            int readRet = -1;
-            ret = new StringBuilder();
-            while((readRet = in.read(b)) > 0){
-                ret.append(new String(b, 0, readRet));
-            }
-        }catch(IOException e){
-            ret = null;
-            log(e);
-        }
-        return ret != null ? ret.toString() : null;
-    }
-
-    /***
-     * 从流中读取二进制数据
-     * @param in 输入流
-     * @return 读取到的二进制数据
-     */
-    private byte[] readBytesFromInStream(InputStream in){
-        byte [] bytes = null;
-        try {
-            bytes = new byte[in.available()];
-            in.read(bytes);
-        }catch (IOException e) {
-            bytes = null;
-            log(e);
-        }
-        return bytes;
-    }
-
-    /***
-     * 根据数据类型，读取文件内容
-     * @param path 文件路径
-     * @param dataType 数据类型
-     * @return Data
-     */
-    private Data getData(String path, DataType dataType){
-        String string = null;
-        byte [] bytes = null;
-        switch (mFileType){
-            case ASSETS:
-                InputStream in = null;
-                try {
-                    in = mAssetManager.open(path);
-                    switch (dataType){
-                        case STRING:
-                            string = readStringFromInStream(in);
-                            break;
-                        case BYTES:
-                            bytes = readBytesFromInStream(in);
-                            break;
-                    }
-                }catch(IOException e){
-                    log(e);
-                }finally {
-                    if(in != null){
-                        try {
-                            in.close();
-                        }catch (IOException e){
-                            log(e);
-                        }
-                    }
-                }
-                break;
-            case SDCARD:
-                File f = new File(mSdcardPath + "/" + path);
-                if(f.isFile()){
-                    FileInputStream fis = null;
-                    try {
-                        fis = new FileInputStream(f);
-                        switch (dataType){
-                            case STRING:
-                                string = readStringFromInStream(fis);
-                                break;
-                            case BYTES:
-                                bytes = readBytesFromInStream(fis);
-                                break;
-                        }
-                    }catch (IOException e){
-                        log(e);
-                    }
-                    finally {
-                        if (fis != null) {
-                            try {
-                                fis.close();
-                            } catch (IOException e) {
-                                log(e);
-                            }
-                        }
-                    }
-                }
-                break;
-            default:
-                break;
-        }
-        Data d = new Data();
-        d.bytes = bytes;
-        d.string = string;
-        return d;
-    }
-
-    /***
-     * 真正使用的读取二进制数据
-     * @return bin bytes
-     */
-    private byte[] readData(){
-        return getData(mFlashDir + "/" + mFlashName + ".flabin", DataType.BYTES).bytes;
-    }
-
-    /***
-     * 读取json数据
-     * @return json object
-     */
-    private JSONObject readJson(){
-        JSONObject jsonObj = null;
-        String jsonAssetPath = mFlashDir + "/" + mFlashName + ".flajson";
-        try {
-            jsonObj = new JSONObject(getData(jsonAssetPath, DataType.STRING).string);
-        }catch(JSONException e){
-            log(e);
-        }
-        return jsonObj;
-    }
-
-    /***
-     * 读取图片
-     * @param imageName
-     * @return bitmap
-     */
-    private Bitmap readImage(String imageName){
-        String imageFullPath = mFlashDir + "/" + mFlashName + "/" + imageName;
-        byte bytes[] = getData(imageFullPath, DataType.BYTES).bytes;
-        return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-    }
-
-    /***
      * 猜测动画文件的类型，并检查需要的文件／文件夹是否存在
      * @param assetFilePathPre 文件前缀（文件名除后缀）
      * @param fileDataType 文件数据类型
      * @return
      */
-    private boolean guessFileType(String assetFilePathPre, FileDataType fileDataType){
-        String assetFilePathExt = ".flajson";
-        if(fileDataType == FileDataType.BIN){
-            assetFilePathExt = ".flabin";
+    private boolean guessFileType(String assetFilePathPre, FlashAnimCommon.FlashFileType fileDataType){
+        String assetFilePathExt = FlashAnimCommon.JSONEXT;
+        if(fileDataType == FlashAnimCommon.FlashFileType.BIN){
+            assetFilePathExt = FlashAnimCommon.BINEXT;
         }
         try {
             mAssetManager.open(assetFilePathPre + assetFilePathExt);
-            mFileType = FileType.ASSETS;
+            mFileType = FlashFileLocationType.ASSETS;
             mFileDataType = fileDataType;
             return true;
         }catch(Exception e){
@@ -348,7 +151,7 @@ public class FlashDataParser{
                 String sdcardFilePath = mSdcardPath + "/" + assetFilePathPre + assetFilePathExt;
                 File sdcardFile = new File(sdcardFilePath);
                 if(sdcardFile.isFile()){
-                    mFileType = FileType.SDCARD;
+                    mFileType = FlashFileLocationType.SDCARD;
                     mFileDataType = fileDataType;
                     return true;
                 }
@@ -363,7 +166,7 @@ public class FlashDataParser{
      */
     private boolean initFileType(){
         String assetFilePathPre = mFlashDir + "/" + mFlashName;
-        return guessFileType(assetFilePathPre, FileDataType.JSON) || guessFileType(assetFilePathPre, FileDataType.BIN);
+        return guessFileType(assetFilePathPre, FlashFileType.JSON) || guessFileType(assetFilePathPre, FlashFileType.BIN);
     }
 
     /***
@@ -371,9 +174,9 @@ public class FlashDataParser{
      */
     public static abstract class Downloader{
         //下载目标flash文件目录
-        private String mDownloadFlashDir = DEFAULT_FLASH_DIR;
+        private String mDownloadFlashDir = FlashAnimCommon.DEFAULT_FLASH_DIR;
         //下载的目标flash 压缩文件目录
-        private String mDownloadFlashZipDir = DEFAULT_FLASH_ZIP_DIR;
+        private String mDownloadFlashZipDir = FlashAnimCommon.DEFAULT_FLASH_ZIP_DIR;
 
         /***
          * 设置下载目标flash文件目录
@@ -430,10 +233,10 @@ public class FlashDataParser{
                 String animImgsDirName = path + "/" + mDownloadFlashDir + "/" + animName;
                 deleteFile(new File(animImgsDirName));
                 //.flajson
-                String flajsonFileName = path + "/" + mDownloadFlashDir + "/" + animName + ".flajson";
+                String flajsonFileName = path + "/" + mDownloadFlashDir + "/" + animName + FlashAnimCommon.JSONEXT;
                 deleteFile(new File(flajsonFileName));
                 //.flabin
-                String flabinFileName = path + "/" + mDownloadFlashDir + "/" + animName + ".flabin";
+                String flabinFileName = path + "/" + mDownloadFlashDir + "/" + animName + FlashAnimCommon.BINEXT;
                 deleteFile(new File(flabinFileName));
             }else{
                 log("sd卡不可用");
@@ -694,8 +497,8 @@ public class FlashDataParser{
         mFlashName = null;
         mFlashDir = null;
         mAssetManager = null;
-        mFileDataType = FileDataType.NONE;
-        mFileType = FileType.NONE;
+        mFileDataType = FlashFileType.NONE;
+        mFileType = FlashFileLocationType.NONE;
         mJson = null;
         mData = null;
         mParsedData = null;
@@ -712,9 +515,9 @@ public class FlashDataParser{
         mDPIRate = -1;
         mScaleX = -1;
         mScaleY = -1;
-        mDesignDPI = DEFAULT_FLASH_DPI;
+        mDesignDPI = FlashAnimCommon.DEFAULT_FLASH_DPI;
 
-        mSetLoopTimes = FlashLoopTimeOnce;
+        mSetLoopTimes = FlashAnimCommon.FlashLoopTimeOnce;
         mLoopTimes = 0;
     }
 
@@ -733,13 +536,19 @@ public class FlashDataParser{
             mAssetManager = mContext.getAssets();
         }
 
-        if (!initFileType() || mFileType == FileType.NONE){
+        if (mAnimCommon == null) {
+            mAnimCommon = new FlashAnimCommon(mContext);
+        }
+
+        if (!initFileType() || mFileType == FlashFileLocationType.NONE){
             log("[ERROR] file is not found in assets and sdcard");
             return false;
         }
 
-        if(mFileDataType == FileDataType.JSON) {
-            mJson = readJson();
+        mAnimCommon.setLocationType(mFileType);
+
+        if(mFileDataType == FlashFileType.JSON) {
+            mJson = mAnimCommon.readJson(mFlashDir + "/" + mFlashName + FlashAnimCommon.JSONEXT);
 
             if (mJson == null) {
                 log("[ERROR] flajson file read error");
@@ -748,7 +557,7 @@ public class FlashDataParser{
 
             parseJson();
         }else{
-            mData = readData();
+            mData = mAnimCommon.readData(mFlashDir + "/" + mFlashName + FlashAnimCommon.BINEXT);
 
             if (mData == null) {
                 log("[ERROR] flabin file read error");
@@ -808,7 +617,7 @@ public class FlashDataParser{
      * @param imageArr 图片名字数组
      * @return 返回一个JSONObject对象
      */
-    private JSONObject readKeyFrame(FlaDataReader reader, ArrayList<String> imageArr){
+    private JSONObject readKeyFrame(FlashDataReader reader, ArrayList<String> imageArr){
         try{
             JSONObject ret = new JSONObject();
             boolean isEmpty = reader.readBool();
@@ -853,7 +662,7 @@ public class FlashDataParser{
             JSONArray textures = mJson.getJSONArray("textures");
             for(int i = 0; i < textures.length(); i++){
                 String texName = textures.getString(i);
-                mImages.put(texName, readImage(texName));
+                mImages.put(texName, mAnimCommon.readImage(mFlashDir + "/" + mFlashName + "/" + texName));
             }
 
             //解析anims
@@ -930,14 +739,14 @@ public class FlashDataParser{
         mImages = new HashMap<String, Bitmap>();
         ArrayList<String> imagesArr = new ArrayList<String>();
 
-        FlaDataReader dataReader = new FlaDataReader();
+        FlashDataReader dataReader = new FlashDataReader(mData);
 
         mFrameRate = dataReader.readUShort();
         //解析images
         int imageNum = dataReader.readUShort();
         for(int i = 0; i < imageNum; i++){
             String texName = dataReader.readString();
-            mImages.put(texName, readImage(texName));
+            mImages.put(texName, mAnimCommon.readImage(mFlashDir + "/" + mFlashName + "/" + texName));
             imagesArr.add(texName);
         }
         //解析anims
@@ -1123,7 +932,7 @@ public class FlashDataParser{
      * @return
      */
     public boolean reload(String flashName){
-        return reload(flashName, DEFAULT_FLASH_DIR);
+        return reload(flashName, FlashAnimCommon.DEFAULT_FLASH_DIR);
     }
 
     /***
@@ -1133,7 +942,7 @@ public class FlashDataParser{
      * @return
      */
     public boolean reload(String flashName, String flashDir){
-        return reload(flashName, flashDir, DEFAULT_FLASH_DPI);
+        return reload(flashName, flashDir, FlashAnimCommon.DEFAULT_FLASH_DPI);
     }
 
     /***
@@ -1323,7 +1132,7 @@ public class FlashDataParser{
     public void stop(){
         mTotalTime = 0;
         mRunningAnimName = null;
-        mSetLoopTimes = FlashLoopTimeOnce;
+        mSetLoopTimes = FlashAnimCommon.FlashLoopTimeOnce;
         mLoopTimes = 0;
         isStop = true;
         mLastFrameIndex = -1;
@@ -1349,49 +1158,6 @@ public class FlashDataParser{
             return;
         }
         isPause = false;
-    }
-
-    /**
-     * 读取二进制文件数据帮助类
-     */
-    private class FlaDataReader{
-        private int mIndex;
-
-        private boolean readBool(){
-            boolean b = mData[mIndex] == 0x01;
-            mIndex += 1;
-            return b;
-        }
-
-        private int readUShort(){
-            int s = (mData[mIndex] & 0xff) | ((mData[mIndex + 1] << 8) & 0xff00);
-            mIndex += 2;
-            return s;
-        }
-
-        private int readInt(){
-            int i = (mData[mIndex] & 0xff | ((mData[mIndex + 1] << 8) & 0xff00)) |
-                    ((mData[mIndex + 2] << 16) & 0xff0000) | (mData[mIndex + 3] << 24);
-            mIndex += 4;
-            return i;
-        }
-
-        private float readFloat(){
-            return Float.intBitsToFloat(readInt());
-        }
-
-        private short readUChar(){
-            short c = (short)(mData[mIndex] & 0xff);
-            mIndex += 1;
-            return c;
-        }
-
-        private String readString(){
-            int strLen = readUShort();
-            String str = new String(mData, mIndex, strLen);
-            mIndex += strLen;
-            return str;
-        }
     }
 
     /***
@@ -1701,7 +1467,7 @@ public class FlashDataParser{
                     mEventCallback.onEvent(FlashViewEvent.ONELOOPEND, null);
                 }
 
-                if (mSetLoopTimes >= FlashLoopTimeOnce) {
+                if (mSetLoopTimes >= FlashAnimCommon.FlashLoopTimeOnce) {
                     if (++mLoopTimes >= mSetLoopTimes) {
                         if (mEventCallback != null) {
                             mEventCallback.onEvent(FlashViewEvent.STOP, null);

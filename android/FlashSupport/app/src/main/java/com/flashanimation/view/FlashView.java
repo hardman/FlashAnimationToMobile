@@ -15,6 +15,7 @@ import android.util.AttributeSet;
 import android.view.View;
 
 import com.flashanimation.R;
+import com.flashanimation.newAnim.FlashAnimCommon;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -49,7 +50,7 @@ public class FlashView extends View {
     //flash文件名
     private String mFlashName = null;
     //flash文件目录，可能在Asset中（Assets/[flash dir]/[flash name]），也可能在sdcard中（/sdcard/.[package name]/[flash dir]/[flash name]）。
-    private String mFlashDir = FlashDataParser.DEFAULT_FLASH_DIR;
+    private String mFlashDir = FlashAnimCommon.DEFAULT_FLASH_DIR;
 
     //下面3个变量为加载完成后默认播放动画时的属性
     private String mDefaultAnimName = null;//默认播放的动画名
@@ -58,10 +59,10 @@ public class FlashView extends View {
 
     //设计DPI，默认为326，iPhone5s的dpi，制作flash时画布大小为640x1136时不用变，否则需要修改此值。
     //如果不懂此值的意思，请查阅dpi相关的更多资料
-    private int mDesignDPI = FlashDataParser.DEFAULT_FLASH_DPI;
+    private int mDesignDPI = FlashAnimCommon.DEFAULT_FLASH_DPI;
 
     //指定的动画重复次数，默认为1次
-    private int mSetLoopTimes = FlashDataParser.FlashLoopTimeOnce;
+    private int mSetLoopTimes = FlashAnimCommon.FlashLoopTimeOnce;
 
     //用户解析动画描述文件和一些工具类，所有关键代码都在这里
     private FlashDataParser mDataParser;
@@ -74,11 +75,11 @@ public class FlashView extends View {
      * 下面3个构造方法可以在纯代码初始化时使用
      */
     public FlashView(Context c, String flashName){
-        this(c, flashName, FlashDataParser.DEFAULT_FLASH_DIR);
+        this(c, flashName, FlashAnimCommon.DEFAULT_FLASH_DIR);
     }
 
     public FlashView(Context c, String flashName, String flashDir){
-        this(c, flashName, flashDir, FlashDataParser.DEFAULT_FLASH_DPI);
+        this(c, flashName, flashDir, FlashAnimCommon.DEFAULT_FLASH_DPI);
     }
 
     public FlashView(Context c, String flashName, String flashDir, int designDPI){
@@ -118,12 +119,12 @@ public class FlashView extends View {
         mFlashName = arr.getString(R.styleable.FlashView_flashFileName);
         mFlashDir = arr.getString(R.styleable.FlashView_flashDir);
         if(mFlashDir == null){
-            mFlashDir = FlashDataParser.DEFAULT_FLASH_DIR;
+            mFlashDir = FlashAnimCommon.DEFAULT_FLASH_DIR;
         }
         mDefaultAnimName = arr.getString(R.styleable.FlashView_defaultAnim);
-        mSetLoopTimes = arr.getInt(R.styleable.FlashView_loopTimes, FlashDataParser.FlashLoopTimeOnce);
+        mSetLoopTimes = arr.getInt(R.styleable.FlashView_loopTimes, FlashAnimCommon.FlashLoopTimeOnce);
 
-        mDesignDPI = arr.getInt(R.styleable.FlashView_designDPI, FlashDataParser.DEFAULT_FLASH_DPI);//326为iphone5的dpi
+        mDesignDPI = arr.getInt(R.styleable.FlashView_designDPI, FlashAnimCommon.DEFAULT_FLASH_DPI);//326为iphone5的dpi
 
         mDefaultFromIndex = arr.getInt(R.styleable.FlashView_fromIndex, mDefaultFromIndex);
         mDefaultToIndex = arr.getInt(R.styleable.FlashView_toIndex, mDefaultToIndex);
@@ -196,7 +197,7 @@ public class FlashView extends View {
      * 事件回调
      * @param callback
      */
-    public void setEventCallback(FlashDataParser.IFlashViewEventCallback callback){
+    public void setEventCallback(FlashAnimCommon.IFlashViewEventCallback callback){
         mDataParser.setEventCallback(callback);
     }
 
