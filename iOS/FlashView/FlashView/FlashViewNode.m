@@ -106,22 +106,19 @@
 //将layer移动至首帧，并从superlayer上移除。
 -(void)resetLayer{
     __weak FlashViewLayerNode *layerNode = self;
-    [self.tool.workQueue addOperationWithBlock:^{
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (layerNode.keyFrames.count > 0) {
-                //查找第一个非空关键帧
-                NSInteger frameIndex = 0;
-                FlashViewFrameNode *frameNode = nil;
-                do {
-                    frameNode = layerNode.keyFrames[frameIndex++];
-                }while (frameNode.isEmpty && frameIndex < layerNode.keyFrames.count);
+    dispatch_async(dispatch_get_main_queue(), ^{
+        if (layerNode.keyFrames.count > 0) {
+            //查找第一个非空关键帧
+            NSInteger frameIndex = 0;
+            FlashViewFrameNode *frameNode = nil;
+            do {
+                frameNode = layerNode.keyFrames[frameIndex++];
+            }while (frameNode.isEmpty && frameIndex < layerNode.keyFrames.count);
                 
-                [layerNode updateLayerViewWithFrameNode:frameNode isFirstFrame:YES];
-            }
-            
+            [layerNode updateLayerViewWithFrameNode:frameNode isFirstFrame:YES];
+        }
             //            NSLog(@"reset layer(%ld) to scalex=%f, scaley=%f", self.index, _layer.transform.m11, _layer.transform.m22);
-        });
-    }];
+    });
 }
 
 //计算出每一帧的数据(位置，大小等信息)
@@ -364,11 +361,9 @@
 
 -(void)updateToIndex:(NSInteger)index lastIndex:(NSInteger) lastIndex{
     __weak FlashViewLayerNode *layerNode = self;
-    [self.tool.workQueue addOperationWithBlock:^{
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [layerNode updateToIndexInner:index lastIndex:lastIndex];
-        });
-    }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [layerNode updateToIndexInner:index lastIndex:lastIndex];
+    });
 }
 
 -(void)trigerEventWithIndex:(NSInteger)index delegate:(id<FlashViewDelegate>)delegate{

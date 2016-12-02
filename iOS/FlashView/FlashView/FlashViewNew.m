@@ -675,6 +675,7 @@
             }
             
             [self onEvent:FlashViewEventOneLoopEnd data:@(mLoopTimes)];
+            [animNode resetLayer];
         }
     }
     

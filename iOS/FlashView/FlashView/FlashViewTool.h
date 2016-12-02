@@ -26,9 +26,6 @@
 //动画偏移量
 @property (nonatomic, unsafe_unretained) CGPoint animOffset;
 
-//工作线程
-@property (nonatomic, strong) NSOperationQueue *workQueue;
-
 //是否动画在运行
 @property (nonatomic, copy) NSString *playingAnimName;
 

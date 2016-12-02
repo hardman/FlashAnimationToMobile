@@ -24,14 +24,6 @@
     return self;
 }
 
--(NSOperationQueue *)workQueue{
-    if (!_workQueue) {
-        _workQueue = [[NSOperationQueue alloc] init];
-        _workQueue.maxConcurrentOperationCount = 4;
-    }
-    return _workQueue;
-}
-
 -(NSMutableDictionary<NSString *,UIImage *> *)images{
     if (!_images) {
         _images = [[NSMutableDictionary alloc] init];
