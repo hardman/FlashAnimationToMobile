@@ -37,6 +37,8 @@
     //动画是否在播放
     BOOL isPlaying;
     
+    BOOL isPaused;
+    
     //动画开始时间（毫秒）
     uint64_t mStartTimeMs;
     //动画上一帧播放时间（毫秒）
@@ -44,6 +46,8 @@
     
     //上次更新LoopTime帧数
     int64_t mLastUpdateLoopTimeMs;
+    
+    int64_t mPauseStartTime;
     
     //当前动画起始帧
     NSInteger mFromIndex;
@@ -577,7 +581,7 @@
 
 //播放某帧动画
 -(void)updateToFrameIndex:(NSInteger)frameIndex{
-    if (!isPlaying) {
+    if (!isPlaying || isPaused) {
         return;
     }
     FlashViewAnimNode *animNode = mFlashViewNode.anims[mPlayingAnimName];
@@ -586,7 +590,7 @@
 
 //动画内事件
 -(void)trigerEventWithIndex:(NSInteger)frameIndex{
-    if (!isPlaying) {
+    if (!isPlaying || isPaused) {
         return;
     }
     FlashViewAnimNode *animNode = mFlashViewNode.anims[mPlayingAnimName];
@@ -620,7 +624,7 @@
 
 //触发事件
 -(void) triggerEventWithCurrTime:(NSTimeInterval) currTime{
-    if (!isPlaying) {
+    if (!isPlaying || isPaused) {
         return;
     }
     
@@ -642,6 +646,9 @@
 
 //动画主循环函数
 -(void) updateAnim:(CADisplayLink *)displayLink{
+    if (!isPlaying || isPaused) {
+        return;
+    }
     uint64_t currTime = self.currentTimeMs;
     NSTimeInterval passedTime = currTime - mStartTimeMs;
     NSTimeInterval passedCount = passedTime / mFlashViewNode.oneFrameDurationMs;
@@ -758,12 +765,36 @@
 }
 //暂停
 -(void) pause{
-    isPlaying = NO;
+    if (!isPlaying) {
+        return;
+    }
+    isPaused = YES;
+    [self.displayLink setPaused:YES];
+    //暂停时间
+    mPauseStartTime = self.currentTimeMs;
 }
 
 //恢复播放
 -(void) resume{
-    isPlaying = YES;
+    if (!isPlaying) {
+        return;
+    }
+    isPaused = NO;
+    [self.displayLink setPaused:NO];
+    
+    //更新时间，补上暂停的这段时间
+    if (mPauseStartTime > 0) {
+        int64_t pausedDuration = self.currentTimeMs - mPauseStartTime;
+        if (pausedDuration > 0) {
+            mStartTimeMs += pausedDuration;
+            mLastFrameTimeMs += pausedDuration;
+            if (mLastUpdateLoopTimeMs > 0) {
+                mLastUpdateLoopTimeMs += pausedDuration;
+            }
+        }
+        
+        mPauseStartTime = -1;
+    }
 }
 
 -(void) stopInner{
@@ -771,6 +802,7 @@
     [mFlashViewNode.anims[mPlayingAnimName] removeLayers];
     
     isPlaying = NO;
+    isPaused = NO;
     mPlayingAnimName = nil;
     mStartTimeMs = 0;
     mFromIndex = 0;
@@ -821,16 +853,11 @@
     return YES;
 }
 
-//view被移除后，关闭定时器。
 -(void)willMoveToWindow:(UIWindow *)newWindow{
     if (!newWindow) {
-        if (isPlaying) {
-            [self.displayLink invalidate];
-        }
+        [self pause];
     }else{
-        if (isPlaying) {
-            [self.displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
-        }
+        [self resume];
     }
 }
 
